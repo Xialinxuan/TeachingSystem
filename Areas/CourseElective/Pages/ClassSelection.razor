@@ -4,46 +4,45 @@
 
 <MatTabGroup>
     <MatTab Label="自主选课">
-        <MatAccordion Multi="true">
-            @for (var i = 0; i < 10; i++)
-            {
-                var ii = i; // capture variable
-                <MatExpansionPanel style="margin-top: 1%;">
-                    <MatExpansionPanelSummary>
-                        <MatExpansionPanelHeader>Panel @ii</MatExpansionPanelHeader>
-                    </MatExpansionPanelSummary>
-                    <MatExpansionPanelDetails>
-                        <MatTable Items="@cars" class="mat-elevation-z5" ShowPaging="false">
-                            <MatTableHeader>
-                                <th>教师</th>
-                                <th>上课时间</th>
-                                <th>上课地点</th>
-                                <th>余量/容量</th>
-                                <th>待定人数</th>
-                                <th>操作</th>
-                            </MatTableHeader>
-                            <MatTableRow>
-                                <td style="width: 20%;">@context.Name</td>
-                                <td style="width: 25%;">@String.Format("${0:f2}", @context.Price)</td>
-                                <td style="width: 25%;">@context.Horsepower</td>
-                                <td style="width: 15%;">4/40</td>
-                                <td style="width: 15%;">5</td>
-                                <td><MatButton Raised="true">选课</MatButton></td>
-                            </MatTableRow>
-                        </MatTable>
-                    </MatExpansionPanelDetails>
-                </MatExpansionPanel>
-            }
-        </MatAccordion>
-        @* <div class="mat-layout-grid">
+        <div class="mat-layout-grid">
             <div class="mat-layout-grid-inner">
                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-1"></div>
                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-10">
-                    
+                    <MatAccordion Multi="true">
+                        @for (var i = 0; i < 10; i++)
+                        {
+                            var ii = i; // capture variable
+                            <MatExpansionPanel style="margin-top: 1%;">
+                                <MatExpansionPanelSummary>
+                                    <MatExpansionPanelHeader>Panel @ii</MatExpansionPanelHeader>
+                                </MatExpansionPanelSummary>
+                                <MatExpansionPanelDetails>
+                                    <MatTable Items="@cars" class="mat-elevation-z5" ShowPaging="false">
+                                        <MatTableHeader>
+                                            <th>教师</th>
+                                            <th>上课时间</th>
+                                            <th>上课地点</th>
+                                            <th>余量/容量</th>
+                                            <th>待定人数</th>
+                                            <th>操作</th>
+                                        </MatTableHeader>
+                                        <MatTableRow>
+                                            <td style="width: 20%;">@context.Name</td>
+                                            <td style="width: 25%;">@String.Format("${0:f2}", @context.Price)</td>
+                                            <td style="width: 25%;">@context.Horsepower</td>
+                                            <td style="width: 15%;">4/40</td>
+                                            <td style="width: 15%;">5</td>
+                                            <td><MatButton Raised="true">选课</MatButton></td>
+                                        </MatTableRow>
+                                    </MatTable>
+                                </MatExpansionPanelDetails>
+                            </MatExpansionPanel>
+                        }
+                    </MatAccordion>
                 </div>
                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-1"></div>
             </div>
-        </div> *@
+        </div>
         
     </MatTab>
     <MatTab Label="查看课表">

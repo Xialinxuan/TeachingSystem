@@ -13,6 +13,11 @@ namespace TeachingSystem.Data
         [Required]
         public long ApplyId { get; set; }
 
-        
+        [Required]
+        [StringLength(100)]
+        public string Reason { get; set; }
+        public User ClassID { get; set; }
+        public User Student { get; set; }
+
     }
 }
