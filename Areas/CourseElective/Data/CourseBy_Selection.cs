@@ -15,7 +15,7 @@ namespace TeachingSystem.Data
         public string CourseBy_SelectionId { get; set; }
 
         // 对应的教学班
-        public Class Class { get; set; }
+        public string ClassId { get; set; }
 
         //所属的课程名称
         // public String CourseName { get; set; }

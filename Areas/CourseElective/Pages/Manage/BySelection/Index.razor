@@ -1,13 +1,13 @@
-@page "/CourseElective/Manage/by-selection"
+@page "/CourseElective/Manage/Byselection"
 
 @attribute [Authorize(Roles = "Admin")]
 
 
 <h1>手动添加课程</h1>
-@* <div class="mat-layout-grid">
+<div class="mat-layout-grid">
             <div class="mat-layout-grid-inner">
                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
-                    <MatButton Icon="add" Link="/BasicInfo/Manage/Account/Create">添加用户</MatButton>
+                    <MatButton Icon="add" Link="/CourseElective/Manage/Byselection/Create">添加用户</MatButton>
 
                 </div>
                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-8">
@@ -15,7 +15,7 @@
 
                 </div>
             </div>
-        </div> *@
+        </div>
  <table class="table">
        
         <thead>
@@ -31,8 +31,8 @@
                   foreach(var select in selection){
                     <tr>
                         <td>@select.Name</td>
-                        <td>@select.Class</td>
-                        <td>@select.Class</td>
+                        <td>@select.ClassId</td>
+                        <td>@select.ClassId</td>
                         @* <td><a href="/BasicInfo/Manage/Account/Edit/@select.Id">编辑</a>|<button type="button" class="btn btn-link" @onclick="@(_ => {selectionToDelete=user;dialogIsOpen=true;})">删除</button></td> *@
                     </tr>
                   

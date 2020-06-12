@@ -6,32 +6,17 @@
 
 @inject IMatToaster Toaster
 
-<EditForm Model="course" OnValidSubmit="Save">
+<EditForm Model="Selection" OnValidSubmit="Save">
     <DataAnnotationsValidator/>
         <p>
-            <MatTextField Label="课号" @bind-Value="course.CourseId" FullWidth="true" ReadOnly="@(!create)"/>
+            <MatTextField Label="课id" @bind-Value="Selection.CourseBy_SelectionId" FullWidth="true" ReadOnly="@(!create)"/>
         </p>
         <p>
-            <MatTextField Label="课程名称" @bind-Value="course.Name" FullWidth="true"/>
+            <MatTextField Label="课程名" @bind-Value="Selection.ClassId" FullWidth="true" ReadOnly="@(!create)"/>
         </p>
-
         <p>
-            <MatTextField Label="开课院系" @bind-Value="course.Department" FullWidth="true"/>
+            <MatTextField Label="课程名称" @bind-Value="Selection.Name" FullWidth="true"/>
         </p>
-
-        <p>
-            <MatTextField  Label="学分" @bind-Value="credit" FullWidth="true" ReadOnly="true"/>
-        </p>
-
-        <p>
-            <MatTextField Label="理论周学时" @bind-Value="course.TheoryHours" FullWidth="true"/>
-        </p>
-
-        <p>
-            <MatTextField Label="实践周学时" @bind-Value="course.PracticeHours" FullWidth="true"/>
-        </p>
-
-        
         <p style="text-align: center">
             <MatButton Type="submit" Raised="true">保存</MatButton>
         </p>
@@ -60,7 +45,7 @@
 
     async Task Save() {
         if(create) {
-            if(await DbContext.CourseBy_Selection.Where(c => c.Class == CourseBy_Selection.Class).CountAsync() != 0) {
+            if(await DbContext.CourseBy_Selection.Where(c => c.ClassId == Selection.ClassId).CountAsync() != 0) {
                 Toaster.Add("已存在同样课号的课程，请修改。", MatToastType.Danger);
 
             }else {
@@ -82,7 +67,7 @@
         if(create) {
             Selection = new CourseBy_Selection();
         } else {
-            Selection = await  DbContext.CourseBy_Selection.SingleAsync(c => c.CourseBy_SelectionId == id);
+            Selection = await DbContext.CourseBy_Selection.SingleAsync(c => c.CourseBy_SelectionId == id);
         }
     }
    
