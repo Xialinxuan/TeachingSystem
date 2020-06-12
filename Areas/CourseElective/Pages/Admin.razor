@@ -1,0 +1,151 @@
+@page "/CourseElective/Manage/Admin"
+
+@attribute [Authorize(Roles = "Admin")]
+
+<MatTabGroup>
+    <MatTab Label="手动添加课程">
+    <div class="mat-layout-grid">
+        <div class="mat-layout-grid-inner">
+            <div class="mat-layout-grid-cell"></div>
+                <div class="mat-layout-grid-cell">
+                    <div class="text-field-container">
+                        <MatTextField @bind-Value="@StudentName" Label="学生姓名" Outlined="true"></MatTextField>
+                    </div>
+                    <br/>
+                    <br/>
+                    <div class="text-field-container" width = "100%">
+                        <MatTextField @bind-Value="@ClassId" Label="课号" Outlined="true"></MatTextField>
+                    </div>
+                    <br/>
+                    <br/>
+                    <div class="text-field-container">
+                        <MatTextField @bind-Value="@ClassName" Label="课程名称" Outlined="true"></MatTextField>
+                    </div>
+                    <br/>
+                    <br/>
+                    <MatButton Raised="true" color="accent" OnClick="@Click">@AddButtonState</MatButton>
+                </div>
+        </div>
+    </div>
+        <div class="mat-layout-grid-cell"></div>
+    </MatTab>
+    <MatTab Label="控制选课开放">
+        <div class="mat-layout-grid">
+        <div class="mat-layout-grid-inner">
+            <div class="mat-layout-grid-cell"></div>
+                <div class="mat-layout-grid-cell">
+                    <MatSelectValue @bind-Value="System_State" Items="@SystemState" ValueSelector="@(i=>i.Name)">
+                        <ItemTemplate>
+                            <span style="color: @context.Color">@context?.Name</span>
+                        </ItemTemplate>
+                    </MatSelectValue>
+                    <br/>
+                    <br/>
+                    <MatButton Raised="true" OnClick="@Click">@ControlButtonState</MatButton>
+                </div>
+        </div>
+    </div>
+    </MatTab>
+    <MatTab Label="控制链接数量">
+        <div class="mat-layout-grid">
+        <div class="mat-layout-grid-inner">
+            <div class="mat-layout-grid-cell"></div>
+                <div class="mat-layout-grid-cell">
+                    <tr>
+                        <th>当前链接数:</th>
+                        <th>@ConnectionNum</th>
+                    </tr>
+                    <div class="text-field-container">
+                        <MatTextField @bind-Value="@_ConnectionNum" Label="链接数量" Outlined="true"></MatTextField>
+                    </div>
+                    <br/>
+                    <br/>
+                    <MatButton Raised="true" OnClick="@Click">@ControlButtonState</MatButton>
+                </div>
+        </div>
+    </div>    
+    </MatTab>
+
+</MatTabGroup>
+
+
+
+@code {
+    public string StudentName
+            {
+                get => _StudentName;
+                set
+                {
+                    _StudentName = value;
+                    this.StateHasChanged();
+                }
+            }
+ 
+        private string _StudentName;
+
+    public string ClassId
+    {
+        get => _ClassId;
+        set
+        {
+            _ClassId = value;
+            this.StateHasChanged();
+        }
+    }
+
+        private string _ClassId;
+
+    public string ClassName
+            {
+                get => _ClassName;
+                set
+                {
+                    _ClassName = value;
+                    this.StateHasChanged();
+                }
+            }
+ 
+        private string _ClassName;
+
+    public string ConnectionNum
+            {
+                get => _ConnectionNum;
+                set
+                {
+                    _ConnectionNum = value;
+                    this.StateHasChanged();
+                }
+            }
+ 
+        private string _ConnectionNum;
+    
+    string AddButtonState = "提交";
+    string ControlButtonState = "修改";
+    string ConnectionButtonState = "提交修改";
+    string System_State = "";
+            void Click(MouseEventArgs e)
+            {
+                AddButtonState = "提交";
+                ControlButtonState = "修改";
+                ConnectionButtonState = "提交修改";
+            }
+
+    SystemStateType[] SystemState = new[]
+            {
+                new SystemStateType("System Off", "black"),
+                new SystemStateType("System On", "green"),
+            };
+ 
+            class SystemStateType
+            {
+                public string Name { get; }
+                public string Color { get; }
+ 
+                public SystemStateType(string name, string color)
+                {
+                    Name = name;
+                    Color = color;
+                }
+            }
+
+}
