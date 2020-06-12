@@ -35,6 +35,20 @@ namespace TeachingSystem.Data
                     userManager.AddToRoleAsync(user, "Student").Wait();
                 }
             }
+            if (userManager.FindByNameAsync("manage").Result == null)
+            {
+                User user = new User
+                {
+                    UserName = "manage",
+                    Email = "abc@xyz.com"
+                };
+                
+                IdentityResult result = userManager.CreateAsync(user, "manage").Result;
+                if (result.Succeeded)
+                {
+                    userManager.AddToRoleAsync(user, "Manager").Wait();
+                }
+            }
         }
     }
 }

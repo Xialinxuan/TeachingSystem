@@ -2,7 +2,7 @@
 @using Microsoft.AspNetCore.Mvc;
 @attribute [Authorize(Roles = "Student")]
 
-
+@using TeachingSystem.Areas.CourseElective.Shared
 <MatTabGroup>
     <MatTab Label="自主选课">
         <EditForm Model="myModel" OnValidSubmit="search">
@@ -73,7 +73,7 @@
         Second Content
     </MatTab>
     <MatTab Label="补选课程">
-        
+        <ClassApply/>
     </MatTab>
 
 </MatTabGroup>
