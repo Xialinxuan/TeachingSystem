@@ -1,0 +1,88 @@
+@page "/CourseElective/Manage/by-selection"
+
+@attribute [Authorize(Roles = "Admin")]
+
+
+<h1>手动添加课程</h1>
+@* <div class="mat-layout-grid">
+            <div class="mat-layout-grid-inner">
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
+                    <MatButton Icon="add" Link="/BasicInfo/Manage/Account/Create">添加用户</MatButton>
+
+                </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-8">
+                    <MatPaginator Length="@size" PageSize="@pageSize" Page="OnPage"></MatPaginator>
+
+                </div>
+            </div>
+        </div> *@
+ <table class="table">
+       
+        <thead>
+            <tr>
+                <th scope="col">姓名</th>
+                <th scope="col">课程号</th>
+                <th scope="col">课程名称</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(selection != null){
+                  foreach(var select in selection){
+                    <tr>
+                        <td>@select.Name</td>
+                        <td>@select.Class</td>
+                        <td>@select.Class</td>
+                        @* <td><a href="/BasicInfo/Manage/Account/Edit/@select.Id">编辑</a>|<button type="button" class="btn btn-link" @onclick="@(_ => {selectionToDelete=user;dialogIsOpen=true;})">删除</button></td> *@
+                    </tr>
+                  
+                }
+            }else {
+                <div class="spinner-border" role="status">
+                    <span class="sr-only">加载中……</span>
+                </div>
+            }
+            
+        </tbody>
+    </table>
+    @* <MatDialog @bind-IsOpen="@dialogIsOpen">
+        <MatDialogTitle>删除用户</MatDialogTitle>
+        <MatDialogContent>
+            <p>真的要删除 @selectionToDelete?.UserName 吗？这个操作无法恢复</p>
+        </MatDialogContent>
+        <MatDialogActions>
+            <MatButton OnClick="@(e => { dialogIsOpen = false; })">否</MatButton>
+            <MatButton OnClick="@DeleteUser">删除</MatButton>
+        </MatDialogActions>
+    </MatDialog> *@
+
+@code {
+    int page = 0;
+    int pageSize = 25;
+    int size = 0;
+    bool dialogIsOpen = false;
+    IEnumerable<CourseBy_Selection> selection;
+    CourseBy_Selection selectionToDelete = null;
+    async Task OnPage(MatPaginatorPageEvent e)
+    {
+        pageSize = e.PageSize;
+        page = e.PageIndex;
+        await UpdateList();
+        StateHasChanged();
+    }
+    @* async Task DeleteSelection() {
+        await _selection.DeleteAsync(selectionToDelete);
+        await UpdateList();
+        dialogIsOpen = false;
+    } *@
+    async Task UpdateList()
+    {
+         selection = await DbContext.CourseBy_Selection.Skip(page * pageSize).Take(pageSize).ToListAsync();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        size = await DbContext.CourseBy_Selection.CountAsync();
+        await UpdateList();
+        
+    }
+}

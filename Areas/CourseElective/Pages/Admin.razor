@@ -52,8 +52,8 @@
             <div class="mat-layout-grid-cell"></div>
                 <div class="mat-layout-grid-cell">
                     <tr>
-                        <th>当前链接数:</th>
-                        <th>@ConnectionNum</th>
+                        <th>当前最大链接数:</th>
+                        <th>@NowConnectionNum</th>
                     </tr>
                     <div class="text-field-container">
                         <MatTextField @bind-Value="@_ConnectionNum" Label="链接数量" Outlined="true"></MatTextField>
@@ -107,12 +107,14 @@
  
         private string _ClassName;
 
+    public string NowConnectionNum = "120";
     public string ConnectionNum
             {
                 get => _ConnectionNum;
                 set
                 {
                     _ConnectionNum = value;
+                    
                     this.StateHasChanged();
                 }
             }
@@ -128,6 +130,7 @@
                 AddButtonState = "提交";
                 ControlButtonState = "修改";
                 ConnectionButtonState = "提交修改";
+                NowConnectionNum = ConnectionNum;
             }
 
     SystemStateType[] SystemState = new[]

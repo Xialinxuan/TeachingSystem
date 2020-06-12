@@ -1,0 +1,90 @@
+
+@using System.ComponentModel.DataAnnotations
+@using System.IO
+@using System.Net.Http.Headers
+@using Microsoft.AspNetCore.Identity;
+
+@inject IMatToaster Toaster
+
+<EditForm Model="course" OnValidSubmit="Save">
+    <DataAnnotationsValidator/>
+        <p>
+            <MatTextField Label="课号" @bind-Value="course.CourseId" FullWidth="true" ReadOnly="@(!create)"/>
+        </p>
+        <p>
+            <MatTextField Label="课程名称" @bind-Value="course.Name" FullWidth="true"/>
+        </p>
+
+        <p>
+            <MatTextField Label="开课院系" @bind-Value="course.Department" FullWidth="true"/>
+        </p>
+
+        <p>
+            <MatTextField  Label="学分" @bind-Value="credit" FullWidth="true" ReadOnly="true"/>
+        </p>
+
+        <p>
+            <MatTextField Label="理论周学时" @bind-Value="course.TheoryHours" FullWidth="true"/>
+        </p>
+
+        <p>
+            <MatTextField Label="实践周学时" @bind-Value="course.PracticeHours" FullWidth="true"/>
+        </p>
+
+        
+        <p style="text-align: center">
+            <MatButton Type="submit" Raised="true">保存</MatButton>
+        </p>
+            
+</EditForm>
+
+
+ 
+@code {
+
+    [Parameter]
+    public bool create{get;set;} = false;
+
+    [Parameter]
+    public bool admin{get;set;} = false;
+
+    [Parameter]
+    public string id{get;set;}
+
+    [Parameter]
+    public Action OnSave{get;set;}
+
+    CourseBy_Selection Selection;
+
+    
+
+    async Task Save() {
+        if(create) {
+            if(await DbContext.CourseBy_Selection.Where(c => c.Class == CourseBy_Selection.Class).CountAsync() != 0) {
+                Toaster.Add("已存在同样课号的课程，请修改。", MatToastType.Danger);
+
+            }else {
+                await DbContext.CourseBy_Selection.AddAsync(Selection);
+                await DbContext.SaveChangesAsync();
+
+                OnSave();
+            }
+        }else{
+            await DbContext.SaveChangesAsync();
+            OnSave();
+        }
+            
+
+    }
+
+    protected override async Task OnInitializedAsync() {
+
+        if(create) {
+            Selection = new CourseBy_Selection();
+        } else {
+            Selection = await  DbContext.CourseBy_Selection.SingleAsync(c => c.CourseBy_SelectionId == id);
+        }
+    }
+   
+}
+ 
