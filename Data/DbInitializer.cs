@@ -50,14 +50,5 @@ namespace TeachingSystem.Data
                 }
             }
         }
-        // public static void SeedBy_Selection(){
-        //     CourseBy_Selection selection= new CourseBy_Selection
-        //         {
-        //             Class = "admin",
-        //             Name = "abc@xyz.com"
-        //         };
-        //     DbContext.CourseBy_Selection.AddAsync(selection);
-            
-        // }
     }
 }
