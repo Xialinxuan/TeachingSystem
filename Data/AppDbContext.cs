@@ -10,7 +10,13 @@ namespace TeachingSystem.Data
 {
     public class TSSDbContext : IdentityDbContext<User>
     {
+        public static class MyGlobals {
+            public static int Systemstate = 0; 
+            public static int MaxConnection = 100; 
 
+            public static int PresentConnection = 0; 
+
+        }
 
         public DbSet<CourseBy_Selection> CourseBy_Selection { get; set; }
         public DbSet<Course> Courses { get; set; }

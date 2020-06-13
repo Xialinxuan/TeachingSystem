@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Mvc;
 @using System.Security.Claims
 @attribute [Authorize(Roles = "Student")]
+@implements IDisposable
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<User> _userManager
@@ -93,6 +94,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        TSSDbContext.MyGlobals.PresentConnection++;
+        Console.WriteLine("OnInitialized");
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         user = await _userManager.GetUserAsync(authState.User);
         Console.WriteLine("Get User id:" + user.Id + " user name:" + user.UserName);
@@ -143,6 +146,7 @@
         }
         courses = await selectcourses.ToListAsync();
     }
+    
     async Task search()
     {
         var selectcourses = from m in DbContext.Courses
@@ -167,5 +171,20 @@
         public string CourseName { get; set; }
         public string CourseID { get; set; }
         public string Department { get; set; }
+    }
+
+    protected override bool ShouldRender()
+    {
+        var renderUI = true;
+        if(TSSDbContext.MyGlobals.PresentConnection>=TSSDbContext.MyGlobals.MaxConnection){
+            renderUI = false;
+        }
+        return renderUI;
+    }
+
+    public void Dispose()
+    {
+        TSSDbContext.MyGlobals.PresentConnection--;
+        Console.WriteLine("Dispose");
     }
 }
