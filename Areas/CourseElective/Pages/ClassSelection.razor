@@ -1,6 +1,7 @@
 @page "/CourseElective/ClassSelection"
 @using Microsoft.AspNetCore.Mvc;
 @attribute [Authorize(Roles = "Student")]
+@implements IDisposable
 
 @using TeachingSystem.Areas.CourseElective.Shared
 <MatTabGroup>
@@ -109,6 +110,12 @@
         new Car("Ford Mondeo", 16000, 120),
     };
 
+    protected override void OnInitialized()
+    {
+        TSSDbContext.MyGlobals.PresentConnection++;
+        Console.WriteLine("OnInitialized");
+        base.OnInitialized();
+    }
     protected override async Task OnInitializedAsync()
     {
         await UpdateList();
@@ -155,5 +162,20 @@
         public string CourseName { get; set; }
         public string CourseID { get; set; }
         public string Department { get; set; }
+    }
+
+    protected override bool ShouldRender()
+    {
+        var renderUI = true;
+        if(TSSDbContext.MyGlobals.PresentConnection>=TSSDbContext.MyGlobals.MaxConnection){
+            renderUI = false;
+        }
+        return renderUI;
+    }
+
+    public void Dispose()
+    {
+        TSSDbContext.MyGlobals.PresentConnection--;
+        Console.WriteLine("Dispose");
     }
 }

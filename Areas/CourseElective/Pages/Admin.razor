@@ -57,7 +57,9 @@
                 <div class="mat-layout-grid-cell">
                     <tr>
                         <th>当前最大链接数:</th>
-                        <th>@NowConnectionNum</th>
+                        <th>@NowMaxConnectionNum</th>
+                        <th>    当前链接数:</th>
+                        <th>@PresentConnection</th>
                     </tr>
                     <div class="text-field-container">
                         <MatTextField @bind-Value="@_ConnectionNum" Label="链接数量" Outlined="true"></MatTextField>
@@ -75,6 +77,22 @@
 
 
 @code {
+
+    protected override void OnInitialized()
+    {
+        if(TSSDbContext.MyGlobals.Systemstate == 0){
+            PresentSystemState = "关闭";
+        }
+        else if(TSSDbContext.MyGlobals.Systemstate == 1){
+            PresentSystemState = "选课";
+        }
+        else if(TSSDbContext.MyGlobals.Systemstate == 2){
+            PresentSystemState = "补选";
+        }
+        NowMaxConnectionNum = TSSDbContext.MyGlobals.MaxConnection.ToString();
+        base.OnInitialized();
+    }
+    int PresentConnection = TSSDbContext.MyGlobals.PresentConnection;
     public string StudentName
             {
                 get => _StudentName;
@@ -111,7 +129,7 @@
  
         private string _ClassName;
 
-    public string NowConnectionNum = "120";
+    
     public string ConnectionNum
             {
                 get => _ConnectionNum;
@@ -130,27 +148,38 @@
             {
                 AddButtonState = "提交"; 
             }
-    string PresentSystemState = TSSDbContext.MyGlobals.Systemstate;
+    string PresentSystemState = "";
     string System_State = "";
     string ControlButtonState = "修改";
              void Click1(MouseEventArgs e)
             {
-                TSSDbContext.MyGlobals.Systemstate = System_State;
-                PresentSystemState = TSSDbContext.MyGlobals.Systemstate;
+                if(System_State == "关闭"){
+                    TSSDbContext.MyGlobals.Systemstate = 0;
+                }
+                else if(System_State == "选课"){
+                    TSSDbContext.MyGlobals.Systemstate = 1;
+                }
+                else if(System_State == "补选"){
+                    TSSDbContext.MyGlobals.Systemstate = 2;
+                }
+                PresentSystemState = System_State;
                 ControlButtonState = "修改";
                 
             }
+    public string NowMaxConnectionNum = "";
     string ConnectionButtonState = "提交修改";
             void Click2(MouseEventArgs e)
             {
                 ConnectionButtonState = "提交修改";
-                NowConnectionNum = ConnectionNum;
+                NowMaxConnectionNum = ConnectionNum;
+                TSSDbContext.MyGlobals.MaxConnection = int.Parse(ConnectionNum);
             }
 
     SystemStateType[] SystemState = new[]
             {
-                new SystemStateType("System Off", "black"),
-                new SystemStateType("System On", "green"),
+                new SystemStateType("关闭", "black"),
+                new SystemStateType("选课", "green"),
+                new SystemStateType("补选", "green"),
             };
  
             class SystemStateType
