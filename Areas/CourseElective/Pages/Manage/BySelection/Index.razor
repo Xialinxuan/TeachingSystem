@@ -1,13 +1,13 @@
-@page "/BasicInfo/Manage/Account"
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.Identity.EntityFrameworkCore
+@page "/CourseElective/Manage/Byselection"
+
 @attribute [Authorize(Roles = "Admin")]
 
-@inject UserManager<User> _userManager
+
+<h1>手动添加课程</h1>
 <div class="mat-layout-grid">
             <div class="mat-layout-grid-inner">
                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
-                    <MatButton Icon="add" Link="/BasicInfo/Manage/Account/Create">添加补选</MatButton>
+                    <MatButton Icon="add" Link="/CourseElective/Manage/Byselection/Create">添加用户</MatButton>
 
                 </div>
                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-8">
@@ -20,24 +20,20 @@
        
         <thead>
             <tr>
-                <th scope="col">用户名</th>
-                <th scope="col">身份</th>
                 <th scope="col">姓名</th>
-                <th scope="col">性别</th>
-                <th scope="col">所属单位</th>
+                <th scope="col">课程号</th>
+                <th scope="col">课程名称</th>
                 <th scope="col"></th>
             </tr>
         </thead>
         <tbody>
-            @if(users != null){
-                  foreach(var user in users){
+            @if(selection != null){
+                  foreach(var select in selection){
                     <tr>
-                        <td>@user.UserName</td>
-                        <td>@String.Join(", ", user.Roles)</td>
-                        <td>@user.Name</td>
-                        <td>@user.Sex</td>
-                        <td>@user.Belong</td>
-                        <td><a href="/BasicInfo/Manage/Account/Edit/@user.Id">编辑</a>|<button type="button" class="btn btn-link" @onclick="@(_ => {userToDelete=user;dialogIsOpen=true;})">删除</button></td>
+                        <td>@select.Name</td>
+                        <td>@select.ClassId</td>
+                        <td>@select.ClassId</td>
+                        @* <td><a href="/BasicInfo/Manage/Account/Edit/@select.Id">编辑</a>|<button type="button" class="btn btn-link" @onclick="@(_ => {selectionToDelete=user;dialogIsOpen=true;})">删除</button></td> *@
                     </tr>
                   
                 }
@@ -49,24 +45,24 @@
             
         </tbody>
     </table>
-    <MatDialog @bind-IsOpen="@dialogIsOpen">
+    @* <MatDialog @bind-IsOpen="@dialogIsOpen">
         <MatDialogTitle>删除用户</MatDialogTitle>
         <MatDialogContent>
-            <p>真的要删除 @userToDelete?.UserName 吗？这个操作无法恢复</p>
+            <p>真的要删除 @selectionToDelete?.UserName 吗？这个操作无法恢复</p>
         </MatDialogContent>
         <MatDialogActions>
             <MatButton OnClick="@(e => { dialogIsOpen = false; })">否</MatButton>
             <MatButton OnClick="@DeleteUser">删除</MatButton>
         </MatDialogActions>
-    </MatDialog>
+    </MatDialog> *@
 
 @code {
     int page = 0;
     int pageSize = 25;
     int size = 0;
     bool dialogIsOpen = false;
-    IEnumerable<User> users;
-    User userToDelete = null;
+    IEnumerable<CourseBy_Selection> selection;
+    CourseBy_Selection selectionToDelete = null;
     async Task OnPage(MatPaginatorPageEvent e)
     {
         pageSize = e.PageSize;
@@ -74,22 +70,18 @@
         await UpdateList();
         StateHasChanged();
     }
-    async Task DeleteUser() {
-        await _userManager.DeleteAsync(userToDelete);
+    @* async Task DeleteSelection() {
+        await _selection.DeleteAsync(selectionToDelete);
         await UpdateList();
         dialogIsOpen = false;
-    }
+    } *@
     async Task UpdateList()
     {
-        users = await _userManager.Users.Skip(page * pageSize).Take(pageSize).ToListAsync();
-        await Task.WhenAll(users.Select(async u =>
-        {
-            u.Roles = await _userManager.GetRolesAsync(u);
-        }));
+         selection = await DbContext.CourseBy_Selection.Skip(page * pageSize).Take(pageSize).ToListAsync();
     }
     protected override async Task OnInitializedAsync()
     {
-        size = await _userManager.Users.CountAsync();
+        size = await DbContext.CourseBy_Selection.CountAsync();
         await UpdateList();
         
     }

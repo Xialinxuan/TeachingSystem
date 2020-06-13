@@ -1,0 +1,22 @@
+@page "/CourseElective/Manage/Byselection/Create"
+@attribute [Authorize(Roles = "Admin")]
+
+@using TeachingSystem.Areas.CourseElective.Shared
+<div class="mat-layout-grid">
+    <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell"></div>
+        <div class="mat-layout-grid-cell">
+            <h1>创建补选</h1>
+            <BySelectionInfo create="true" admin="true" OnSave="OnSave"></BySelectionInfo>
+        </div>
+        <div class="mat-layout-grid-cell"></div>
+        
+    </div>
+</div>
+ 
+
+@code {
+    void OnSave() {
+        NavigationManager.NavigateTo("/CourseElective/Manage/Byselection");
+    }
+}
