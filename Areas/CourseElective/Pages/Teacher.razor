@@ -82,7 +82,7 @@
                 </div>
             </div>
         </div>
- <table class="table">
+        <table class="table">
        
         <thead>
             <tr>
@@ -94,13 +94,13 @@
             </tr>
         </thead>
         <tbody>
-            @if(records != null){
-                  foreach(var course in records){
+            @if(courses != null){
+                  foreach(var course in courses){
                     <tr>
                         <td>@course.CourseId</td>
                         <td>@course.Name</td>
                         <td>@course.Department</td>
-                        <td>@(course.TheoryHours + course.PracticeHours/2.0)</td>
+                        <td><button type="button" class="btn btn-link" @onclick="@(_ => {recordToDelete=course;reasonIsOpen=true;})">查看理由</button></td>
                         <td><button type="button" class="btn btn-link" @onclick="@(_ => {recordToDelete=course;dialogAllowIsOpen=true;})">通过</button>
                         |<button type="button" class="btn btn-link" @onclick="@(_ => {recordToDelete=course;dialogRefuseIsOpen=true;})">拒绝</button></td>
                     </tr>
@@ -117,22 +117,32 @@
     <MatDialog @bind-IsOpen="@dialogAllowIsOpen">
         <MatDialogTitle>通过补选</MatDialogTitle>
         <MatDialogContent>
-            <p>真的要通过 @recordToDelete?.Name 的补选申请申请吗？这个操作无法恢复</p>
+            <p>真的要通过 @recordToDelete?.Name 的补选申请申请吗？</p>
         </MatDialogContent>
         <MatDialogActions>
             <MatButton OnClick="@(e => { dialogAllowIsOpen = false; })">否</MatButton>
-            <MatButton OnClick="@DeleteRecord">是</MatButton>
+            <MatButton OnClick="@AddToClass">是</MatButton>
         </MatDialogActions>
     </MatDialog>
 
     <MatDialog @bind-IsOpen="@dialogRefuseIsOpen">
         <MatDialogTitle>不通过补选</MatDialogTitle>
         <MatDialogContent>
-            <p>确定不通过 @recordToDelete?.Name 的补选吗？这个操作无法恢复</p>
+            <p>确定不通过 @recordToDelete?.Name 的补选吗？</p>
         </MatDialogContent>
         <MatDialogActions>
             <MatButton OnClick="@(e => { dialogRefuseIsOpen = false; })">否</MatButton>
             <MatButton OnClick="@DeleteRecord">是</MatButton>
+        </MatDialogActions>
+    </MatDialog>
+
+    <MatDialog @bind-IsOpen="@reasonIsOpen">
+        <MatDialogTitle>补选理由</MatDialogTitle>
+        <MatDialogContent>
+            <p>@recordToDelete?.Name  这是一段非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长的测试</p>
+        </MatDialogContent>
+        <MatDialogActions>
+            <MatButton OnClick="@(e => { reasonIsOpen = false; })">关闭</MatButton>
         </MatDialogActions>
     </MatDialog>
         
@@ -140,7 +150,7 @@
 
 </MatTabGroup>
 
- 
+@*part1 download studentlist*@
 @code
 {
     [Inject] IJSRuntime JS { get; set; }
@@ -173,29 +183,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await UpdateList();
-        size = await DbContext.records.CountAsync();
-        await UpdateList1();
-    }
-    async Task UpdateList()
-    {
-        var selectclasses = from m in DbContext.Classes
-                    select m;
-        if (!string.IsNullOrEmpty(myDownloadModel.CourseName))
-        {
-            selectclasses = selectclasses.Where(s => s.Course.Name.Contains(myDownloadModel.CourseName));
-        }
-        if (!string.IsNullOrEmpty(myDownloadModel.CourseID))
-        {
-            selectclasses = selectclasses.Where(s => s.Course.CourseId.Contains(myDownloadModel.CourseID));
-        }
-        if (!string.IsNullOrEmpty(myDownloadModel.ClassID))
-        {
-            selectclasses = selectclasses.Where(s => s.ClassId.Contains(myDownloadModel.ClassID));
-        }
+        @*分页面1初始化*@
+        await search();
 
-        @*selectrecords = selectrecords.Where(s => s.Department.Contains(myDownloadModel.Department));*@
-        classes = await selectclasses.ToListAsync();
+        @*分页面2初始化*@
+        size = await DbContext.Courses.CountAsync();
+        await UpdateList1();
     }
     async Task search()
     {
@@ -214,7 +207,7 @@
             selectclasses = selectclasses.Where(s => s.ClassId.Contains(myDownloadModel.ClassID));
         }
 
-        @*selectrecords = selectrecords.Where(s => s.Teacher.name.Contains());*@ @*需要知道用户登录状态信息*@
+        @*selectcourses = selectcourses.Where(s => s.Teacher.name.Contains());*@ @*需要知道用户登录状态信息*@
         
         classes = await selectclasses.ToListAsync();
     }
@@ -230,15 +223,17 @@
     }
 }
 
+@*part2 补选申请审核*@
 @code
 {
     int page = 0;
     int pageSize = 25;
     int size = 0;
-    bool dialogAllowIsOpen = false;
-    bool dialogRefuseIsOpen = false;
-    IEnumerable<Course> records;
-    Records recordToDelete = null;
+    bool dialogAllowIsOpen = false;@*允许选课二次确认窗口指示标识*@
+    bool dialogRefuseIsOpen = false;@*拒绝选课二次确认窗口指示标识*@
+    bool reasonIsOpen = false;@*显示理由窗口指示标识*@
+    IEnumerable<Course> courses;
+    Course recordToDelete = null;
     async Task OnPage(MatPaginatorPageEvent e)
     {
         pageSize = e.PageSize;
@@ -248,14 +243,27 @@
     }
     async Task DeleteRecord() {
         
-        DbContext.Records.Remove(recordToDelete);
+        DbContext.Courses.Remove(recordToDelete);
         await DbContext.SaveChangesAsync();
         await UpdateList1();
         dialogAllowIsOpen = false;
+        dialogRefuseIsOpen = false;
+    }
+    async Task AddToClass() {
+        @*
+        条件： record 解析获得 src：学生  src：class 
+        目标： 向classes中的class中的studentlist添加学生
+        目标： 向学生表中学生list class 添加 classid
+        *@
+
+        await DeleteRecord();
+        DbContext.Courses.Remove(recordToDelete);
+        await DbContext.SaveChangesAsync();
+        
     }
     async Task UpdateList1()
     {
-        records = await DbContext.records.Skip(page * pageSize).Take(pageSize).ToListAsync();
+        courses = await DbContext.Courses.Skip(page * pageSize).Take(pageSize).ToListAsync();
        
     }
 }
