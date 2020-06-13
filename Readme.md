@@ -1,6 +1,9 @@
 
 
 ## 一些可能会遇到的问题
+### 端口问题
+注意：这个仓库的端口是6600，不是5000
+
 ### 怎么配环境？
 参考我上次写的：https://github.com/2020SP-ZJU-SE-LYS-T1/DevelopmentContainer 的ReadMe
 
