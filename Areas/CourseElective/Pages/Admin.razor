@@ -34,6 +34,10 @@
         <div class="mat-layout-grid-inner">
             <div class="mat-layout-grid-cell"></div>
                 <div class="mat-layout-grid-cell">
+                    <tr>
+                        <th>当前系统状态:</th>
+                        <th>@PresentSystemState</th>
+                    </tr>
                     <MatSelectValue @bind-Value="System_State" Items="@SystemState" ValueSelector="@(i=>i.Name)">
                         <ItemTemplate>
                             <span style="color: @context.Color">@context?.Name</span>
@@ -41,7 +45,7 @@
                     </MatSelectValue>
                     <br/>
                     <br/>
-                    <MatButton Raised="true" OnClick="@Click">@ControlButtonState</MatButton>
+                    <MatButton Raised="true" OnClick="@Click1">@ControlButtonState</MatButton>
                 </div>
         </div>
     </div>
@@ -60,7 +64,7 @@
                     </div>
                     <br/>
                     <br/>
-                    <MatButton Raised="true" OnClick="@Click">@ConnectionButtonState</MatButton>
+                    <MatButton Raised="true" OnClick="@Click2">@ConnectionButtonState</MatButton>
                 </div>
         </div>
     </div>    
@@ -121,14 +125,24 @@
  
         private string _ConnectionNum;
     
-    string AddButtonState = "提交";
-    string ControlButtonState = "修改";
-    string ConnectionButtonState = "提交修改";
-    string System_State = "";
+    string AddButtonState = "提交";   
             void Click(MouseEventArgs e)
             {
-                AddButtonState = "提交";
+                AddButtonState = "提交"; 
+            }
+    string PresentSystemState = TSSDbContext.MyGlobals.Systemstate;
+    string System_State = "";
+    string ControlButtonState = "修改";
+             void Click1(MouseEventArgs e)
+            {
+                TSSDbContext.MyGlobals.Systemstate = System_State;
+                PresentSystemState = TSSDbContext.MyGlobals.Systemstate;
                 ControlButtonState = "修改";
+                
+            }
+    string ConnectionButtonState = "提交修改";
+            void Click2(MouseEventArgs e)
+            {
                 ConnectionButtonState = "提交修改";
                 NowConnectionNum = ConnectionNum;
             }

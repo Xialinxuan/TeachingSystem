@@ -10,7 +10,10 @@ namespace TeachingSystem.Data
 {
     public class TSSDbContext : IdentityDbContext<User>
     {
-
+        public static class MyGlobals {
+            public static string Systemstate = "System Off"; 
+            public static int Total = 5; // can change because not const
+        }
 
         public DbSet<CourseBy_Selection> CourseBy_Selection { get; set; }
         public DbSet<Course> Courses { get; set; }
