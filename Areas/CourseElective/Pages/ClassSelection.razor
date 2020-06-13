@@ -95,7 +95,7 @@
     protected override async Task OnInitializedAsync()
     {
         TSSDbContext.MyGlobals.PresentConnection++;
-        Console.WriteLine("OnInitialized");
+        Console.WriteLine("OnInitialized " + TSSDbContext.MyGlobals.PresentConnection);
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         user = await _userManager.GetUserAsync(authState.User);
         Console.WriteLine("Get User id:" + user.Id + " user name:" + user.UserName);

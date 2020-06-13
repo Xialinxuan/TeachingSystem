@@ -13,7 +13,6 @@ namespace TeachingSystem.Data
         public static class MyGlobals {
             public static int Systemstate = 0; 
             public static int MaxConnection = 100; 
-
             public static int PresentConnection = 0; 
 
         }
