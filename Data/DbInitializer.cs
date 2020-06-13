@@ -35,15 +35,20 @@ namespace TeachingSystem.Data
                     userManager.AddToRoleAsync(user, "Student").Wait();
                 }
             }
+            if (userManager.FindByNameAsync("manage").Result == null)
+            {
+                User user = new User
+                {
+                    UserName = "manage",
+                    Email = "abc@xyz.com"
+                };
+                
+                IdentityResult result = userManager.CreateAsync(user, "manage").Result;
+                if (result.Succeeded)
+                {
+                    userManager.AddToRoleAsync(user, "Manager").Wait();
+                }
+            }
         }
-        // public static void SeedBy_Selection(){
-        //     CourseBy_Selection selection= new CourseBy_Selection
-        //         {
-        //             Class = "admin",
-        //             Name = "abc@xyz.com"
-        //         };
-        //     DbContext.CourseBy_Selection.AddAsync(selection);
-            
-        // }
     }
 }

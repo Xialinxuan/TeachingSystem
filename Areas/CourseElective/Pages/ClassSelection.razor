@@ -1,20 +1,41 @@
 @page "/CourseElective/ClassSelection"
+@using Microsoft.AspNetCore.Mvc;
 @attribute [Authorize(Roles = "Student")]
 
-
+@using TeachingSystem.Areas.CourseElective.Shared
 <MatTabGroup>
     <MatTab Label="自主选课">
+        <EditForm Model="myModel" OnValidSubmit="search">
+            <DataAnnotationsValidator/>
+                <div class="mat-layout-grid">
+                    <div class="mat-layout-grid-inner">
+                        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-1"></div>
+                        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+                            <MatTextField @bind-Value="myModel.CourseName" Label="CourseName"></MatTextField>
+                        </div>
+                        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+                            <MatTextField @bind-Value="myModel.CourseID" Label="CourseID"></MatTextField>
+                        </div>
+                        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+                            <MatTextField @bind-Value="myModel.Department" Label="Department"></MatTextField>
+                        </div>
+                        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-1">
+                            <MatButton Type="submit" Raised="true">search</MatButton>
+                        </div>
+                        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-1"></div>
+                    </div>
+                </div>
+        </EditForm>
         <div class="mat-layout-grid">
             <div class="mat-layout-grid-inner">
                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-1"></div>
                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-10">
                     <MatAccordion Multi="true">
-                        @for (var i = 0; i < 10; i++)
-                        {
-                            var ii = i; // capture variable
-                            <MatExpansionPanel style="margin-top: 1%;">
+                        @if(courses != null){
+                            foreach(var course in courses){
+                                <MatExpansionPanel style="margin-top: 1%;">
                                 <MatExpansionPanelSummary>
-                                    <MatExpansionPanelHeader>Panel @ii</MatExpansionPanelHeader>
+                                <MatExpansionPanelHeader>@course.Name</MatExpansionPanelHeader>
                                 </MatExpansionPanelSummary>
                                 <MatExpansionPanelDetails>
                                     <MatTable Items="@cars" class="mat-elevation-z5" ShowPaging="false">
@@ -37,6 +58,9 @@
                                     </MatTable>
                                 </MatExpansionPanelDetails>
                             </MatExpansionPanel>
+                            }
+                        }else {
+
                         }
                     </MatAccordion>
                 </div>
@@ -49,7 +73,7 @@
         Second Content
     </MatTab>
     <MatTab Label="补选课程">
-        
+        <ClassApply/>
     </MatTab>
 
 </MatTabGroup>
@@ -58,7 +82,8 @@
 @code
 {
     [Inject] IJSRuntime JS { get; set; }
-
+    IEnumerable<Course> courses;
+    SearchModel myModel = new SearchModel();
     public class Car
     {
         public string Name { get; set; }
@@ -84,5 +109,51 @@
         new Car("Ford Mondeo", 16000, 120),
     };
 
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateList();
+    }
+    async Task UpdateList()
+    {
+        var selectcourses = from m in DbContext.Courses
+                    select m;
+        if (!string.IsNullOrEmpty(myModel.CourseName))
+        {
+            selectcourses = selectcourses.Where(s => s.Name.Contains(myModel.CourseName));
+        }
+        if (!string.IsNullOrEmpty(myModel.CourseID))
+        {
+            selectcourses = selectcourses.Where(s => s.CourseId.Contains(myModel.CourseID));
+        }
+        if (!string.IsNullOrEmpty(myModel.Department))
+        {
+            selectcourses = selectcourses.Where(s => s.Department.Contains(myModel.Department));
+        }
+        courses = await selectcourses.ToListAsync();
+    }
+    async Task search()
+    {
+        var selectcourses = from m in DbContext.Courses
+                    select m;
+        if (!string.IsNullOrEmpty(myModel.CourseName))
+        {
+            selectcourses = selectcourses.Where(s => s.Name.Contains(myModel.CourseName));
+        }
+        if (!string.IsNullOrEmpty(myModel.CourseID))
+        {
+            selectcourses = selectcourses.Where(s => s.CourseId.Contains(myModel.CourseID));
+        }
+        if (!string.IsNullOrEmpty(myModel.Department))
+        {
+            selectcourses = selectcourses.Where(s => s.Department.Contains(myModel.Department));
+        }
+        courses = await selectcourses.ToListAsync();
+    }
 
+    public class SearchModel
+    {
+        public string CourseName { get; set; }
+        public string CourseID { get; set; }
+        public string Department { get; set; }
+    }
 }
