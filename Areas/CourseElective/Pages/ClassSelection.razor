@@ -1,6 +1,10 @@
 @page "/CourseElective/ClassSelection"
 @using Microsoft.AspNetCore.Mvc;
+@using System.Security.Claims
 @attribute [Authorize(Roles = "Student")]
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<User> _userManager
 
 @using TeachingSystem.Areas.CourseElective.Shared
 <MatTabGroup>
@@ -84,6 +88,18 @@
     [Inject] IJSRuntime JS { get; set; }
     IEnumerable<Course> courses;
     SearchModel myModel = new SearchModel();
+
+    User user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = await _userManager.GetUserAsync(authState.User);
+        Console.WriteLine("Get User id:" + user.Id + " user name:" + user.UserName);
+        await UpdateList();
+    }
+
+
     public class Car
     {
         public string Name { get; set; }
@@ -109,10 +125,6 @@
         new Car("Ford Mondeo", 16000, 120),
     };
 
-    protected override async Task OnInitializedAsync()
-    {
-        await UpdateList();
-    }
     async Task UpdateList()
     {
         var selectcourses = from m in DbContext.Courses
