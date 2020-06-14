@@ -96,6 +96,10 @@
     {
         TSSDbContext.MyGlobals.PresentConnection++;
         Console.WriteLine("OnInitialized " + TSSDbContext.MyGlobals.PresentConnection);
+        if(TSSDbContext.MyGlobals.PresentConnection > TSSDbContext.MyGlobals.MaxConnection){
+            await JS.InvokeAsync<object>("alert", "选课子系统连接人数已满！");
+            NavigationManager.NavigateTo("/");
+        }
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         user = await _userManager.GetUserAsync(authState.User);
         Console.WriteLine("Get User id:" + user.Id + " user name:" + user.UserName);
