@@ -50,5 +50,16 @@ namespace TeachingSystem.Data
                 }
             }
         }
+        public static void Initialize(TSSDbContext context){
+            var SpecialityCourse = new SpecialityCourse[]
+            {
+                new SpecialityCourse{SpecialityCourseID = "1",CourseId="1",UserID="111",UserName="pjw"},
+                new SpecialityCourse{SpecialityCourseID = "2",CourseId="1",UserID="222",UserName="pjw"},
+                new SpecialityCourse{SpecialityCourseID = "3",CourseId="1",UserID="333",UserName="pjw"},
+                new SpecialityCourse{SpecialityCourseID = "4",CourseId="1",UserID="444",UserName="pjw"},
+            };
+            context.SpecialityCourse.AddRange(SpecialityCourse);
+            context.SaveChanges();
+        }
     }
 }
