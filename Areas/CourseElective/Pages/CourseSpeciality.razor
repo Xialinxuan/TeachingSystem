@@ -14,8 +14,10 @@
         <thead>
             <tr>
                 <th scope="col">课程号</th>
+                <th scope="col">课程名称</th>
                 <th scope="col">用户ID</th>
                 <th scope="col">用户名</th>
+                
                 <th scope="col"></th>
             </tr>
         </thead>
@@ -23,7 +25,8 @@
             @if(specialityCourse != null){
                   foreach(var SC in specialityCourse){
                     <tr>
-                        @* <td>@SC.CourseId</td> *@
+                        <td>@SC.CourseId</td>
+                        <td>@SC.Course.Name</td>
                         <td>@SC.UserID</td>
                         <td>@SC.UserName</td>
                         @* <td><a href="/BasicInfo/Manage/Account/Edit/@select.Id">编辑</a>|<button type="button" class="btn btn-link" @onclick="@(_ => {selectionToDelete=user;dialogIsOpen=true;})">删除</button></td> *@
@@ -75,9 +78,8 @@
     IEnumerable<SpecialityCourse> specialityCourse;
     async Task UpdateList()
     {
-        specialityCourse = await DbContext.SpecialityCourse.Skip(page * pageSize).Take(pageSize).ToListAsync();
+        specialityCourse = await DbContext.SpecialityCourse.Include(i => i.Course).ToListAsync();
     }
-
 }
 
 

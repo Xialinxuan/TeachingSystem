@@ -53,10 +53,10 @@ namespace TeachingSystem.Data
         public static void Initialize(TSSDbContext context){
             var SpecialityCourse = new SpecialityCourse[]
             {
-                new SpecialityCourse{SpecialityCourseID = "1",CourseId="1",UserID="111",UserName="pjw"},
-                new SpecialityCourse{SpecialityCourseID = "2",CourseId="1",UserID="222",UserName="pjw"},
-                new SpecialityCourse{SpecialityCourseID = "3",CourseId="1",UserID="333",UserName="pjw"},
-                new SpecialityCourse{SpecialityCourseID = "4",CourseId="1",UserID="444",UserName="pjw"},
+                new SpecialityCourse{SpecialityCourseID = "5",CourseId="2",UserID="111",UserName="giao"},
+                new SpecialityCourse{SpecialityCourseID = "6",CourseId="2",UserID="222",UserName="giao"},
+                new SpecialityCourse{SpecialityCourseID = "7",CourseId="2",UserID="333",UserName="giao"},
+                new SpecialityCourse{SpecialityCourseID = "8",CourseId="2",UserID="444",UserName="giao"},
             };
             context.SpecialityCourse.AddRange(SpecialityCourse);
             context.SaveChanges();
