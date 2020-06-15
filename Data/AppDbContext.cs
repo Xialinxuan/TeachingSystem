@@ -17,7 +17,6 @@ namespace TeachingSystem.Data
 
         }
 
-        public DbSet<CourseBy_Selection> CourseBy_Selection { get; set; }
         public DbSet<Course> Courses { get; set; }
         public DbSet<Class> Classes { get; set; }
         public DbSet<ClassChoice> ClassChoices { get; set; }
