@@ -1,0 +1,109 @@
+@page "/CourseElective/SpecialityCourse"
+@using Microsoft.AspNetCore.Mvc;
+@using System.Security.Claims
+
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<User> _userManager
+
+
+<div class="mat-layout-grid">
+            <div class="mat-layout-grid-inner">
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
+                    <MatButton Icon="add" Link="/CourseElective/SpecialityCourse/Create">添加课程</MatButton>
+
+                </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-8">
+                    <MatPaginator Length="@size" PageSize="@pageSize" Page="OnPage"></MatPaginator>
+
+                </div>
+            </div>
+        </div>
+ <table class="table">
+       
+        <thead>
+            <tr>
+                <th scope="col">课程号</th>
+                <th scope="col">课程名称</th>
+                <th scope="col">用户ID</th>
+                <th scope="col">用户名</th>
+                
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(specialityCourse != null){
+                  foreach(var SC in specialityCourse){
+                    <tr>
+                        <td>@SC.CourseId</td>
+                        <td>@SC.Course.Name</td>
+                        <td>@SC.UserID</td>
+                        <td>@SC.UserName</td>
+                        <td><a href="/BasicInfo/Manage/Account/Edit/@SC.SpecialityCourseID">编辑</a>|<button type="button" class="btn btn-link" @onclick="@(_ => {_SpecialityCourseToDelete=SC;dialogIsOpen=true;})">删除</button></td>
+                    </tr>
+                  
+                }
+            }else {
+                <div class="spinner-border" role="status">
+                    <span class="sr-only">加载中……</span>
+                </div>
+            }
+            
+        </tbody>
+    </table>
+    <MatDialog @bind-IsOpen="@dialogIsOpen">
+        <MatDialogTitle>删除课程</MatDialogTitle>
+        <MatDialogContent>
+            <p>真的要删除 @_SpecialityCourseToDelete?.CourseId @_SpecialityCourseToDelete?.Course.Name @_SpecialityCourseToDelete?.UserName 吗？这个操作无法恢复</p>
+        </MatDialogContent>
+        <MatDialogActions>
+            <MatButton OnClick="@(e => { dialogIsOpen = false; })">否</MatButton>
+            <MatButton OnClick="@DeleteSpecialityCourse">删除</MatButton>
+        </MatDialogActions>
+    </MatDialog>
+@code {
+    int page = 0;
+    int pageSize = 25;
+    int size = 0;
+    bool dialogIsOpen = false;
+    SpecialityCourse _SpecialityCourseToDelete = null;
+    User user;
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = await _userManager.GetUserAsync(authState.User);
+        Console.WriteLine("Get User id:" + user.Id + " user name:" + user.UserName);
+ 
+        await UpdateList();
+        await UpdateList();
+    }
+
+    async Task OnPage(MatPaginatorPageEvent e)
+    {
+        pageSize = e.PageSize;
+        page = e.PageIndex;
+        await UpdateList();
+        StateHasChanged();
+    }
+    async Task DeleteSpecialityCourse() {
+        var SC = await DbContext.SpecialityCourse.FindAsync(_SpecialityCourseToDelete.SpecialityCourseID);
+        DbContext.SpecialityCourse.Remove(SC);
+        await DbContext.SaveChangesAsync();
+        await UpdateList();
+        dialogIsOpen = false;
+    }
+
+    IEnumerable<SpecialityCourse> specialityCourse;
+    async Task UpdateList()
+    {
+        specialityCourse = await DbContext.SpecialityCourse.Include(i => i.Course).ToListAsync();
+    }
+}
+
+
+
+
+

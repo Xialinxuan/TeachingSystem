@@ -1,0 +1,88 @@
+
+@using System.ComponentModel.DataAnnotations
+@using System.IO
+@using System.Net.Http.Headers
+@using Microsoft.AspNetCore.Identity;
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IMatToaster Toaster
+@inject UserManager<User> _userManager
+
+<EditForm Model="SpecialityCourse" OnValidSubmit="Save">
+    <DataAnnotationsValidator/>
+        <p>
+            <MatTextField Label="培养方案课程编号" @bind-Value="SpecialityCourse.SpecialityCourseID" FullWidth="true" ReadOnly="@(!create)"/>
+        </p>
+
+        <p>
+            <MatTextField Label="课程号" @bind-Value="SpecialityCourse.CourseId" FullWidth="true" />
+        </p>
+
+        <p>
+            <MatTextField Label="用户ID" @bind-Value="SpecialityCourse.UserID" FullWidth="true"/>
+        </p>
+
+        <p>
+            <MatTextField  Label="用户名" @bind-Value="SpecialityCourse.UserName" FullWidth="true"/>
+        </p>
+        
+        <p style="text-align: center">
+            <MatButton Type="submit" Raised="true">保存</MatButton>
+        </p>
+            
+</EditForm>
+
+
+ 
+@code {
+
+    [Parameter]
+    public bool create{get;set;} = false;
+
+    [Parameter]
+    public bool admin{get;set;} = false;
+
+    [Parameter]
+    public string id{get;set;}
+
+    [Parameter]
+    public Action OnSave{get;set;}
+
+    
+    SpecialityCourse SpecialityCourse;
+    User user;
+    
+
+    async Task Save() {
+        if(create) {
+            if(await DbContext.SpecialityCourse.Where(c => c.SpecialityCourseID == SpecialityCourse.SpecialityCourseID).CountAsync() != 0) {
+                Toaster.Add("已存在同样课号的课程，请修改。", MatToastType.Danger);
+
+            }else {
+                await DbContext.SpecialityCourse.AddAsync(SpecialityCourse);
+                await DbContext.SaveChangesAsync();
+
+                OnSave();
+            }
+        }else{
+            await DbContext.SaveChangesAsync();
+            OnSave();
+        }
+            
+
+    }
+
+    protected override async Task OnInitializedAsync() {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            user = await _userManager.GetUserAsync(authState.User);
+        if(create) {
+            SpecialityCourse = new SpecialityCourse();
+        } else {
+            SpecialityCourse = await  DbContext.SpecialityCourse.SingleAsync(c => c.SpecialityCourseID == id);
+        }
+        SpecialityCourse.UserID = user.Id;
+        SpecialityCourse.UserName = user.Name;
+    }
+   
+}
+ 

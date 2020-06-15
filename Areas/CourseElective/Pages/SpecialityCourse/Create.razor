@@ -1,0 +1,22 @@
+@page "/CourseElective/SpecialityCourse/Create"
+@attribute [Authorize(Roles = "Manager")]
+
+@using TeachingSystem.Areas.CourseElective.Shared
+<div class="mat-layout-grid">
+    <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell"></div>
+        <div class="mat-layout-grid-cell">
+            <h1>创建培养方案课程</h1>
+            <SpecialityCourseInfo create="true" admin="true" OnSave="OnSave"></SpecialityCourseInfo>
+        </div>
+        <div class="mat-layout-grid-cell"></div>
+        
+    </div>
+</div>
+ 
+
+@code {
+    void OnSave() {
+        NavigationManager.NavigateTo("/CourseElective/SpecialityCourse");
+    }
+}"
