@@ -1,7 +1,6 @@
 @page "/CourseElective/ClassSelection"
 @using Microsoft.AspNetCore.Mvc;
 @using System.Security.Claims
-@attribute [Authorize(Roles = "Student")]
 @implements IDisposable
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -16,16 +15,16 @@
                     <div class="mat-layout-grid-inner">
                         <div class="mat-layout-grid-cell mat-layout-grid-cell-span-1"></div>
                         <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
-                            <MatTextField @bind-Value="myModel.CourseName" Label="CourseName"></MatTextField>
+                            <MatTextField @bind-Value="myModel.CourseName" Label="课程名称"></MatTextField>
                         </div>
                         <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
-                            <MatTextField @bind-Value="myModel.CourseID" Label="CourseID"></MatTextField>
+                            <MatTextField @bind-Value="myModel.CourseID" Label="课程代码"></MatTextField>
                         </div>
                         <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
-                            <MatTextField @bind-Value="myModel.Department" Label="Department"></MatTextField>
+                            <MatTextField @bind-Value="myModel.TeacherName" Label="教师名称"></MatTextField>
                         </div>
                         <div class="mat-layout-grid-cell mat-layout-grid-cell-span-1">
-                            <MatButton Type="submit" Raised="true">search</MatButton>
+                            <MatButton Type="submit" Raised="true">搜索课程</MatButton>
                         </div>
                         <div class="mat-layout-grid-cell mat-layout-grid-cell-span-1"></div>
                     </div>
@@ -40,10 +39,10 @@
                             foreach(var course in courses){
                                 <MatExpansionPanel style="margin-top: 1%;">
                                 <MatExpansionPanelSummary>
-                                <MatExpansionPanelHeader>@course.Name</MatExpansionPanelHeader>
+                                <MatExpansionPanelHeader>@course[0].showclass.Course.Name</MatExpansionPanelHeader>
                                 </MatExpansionPanelSummary>
                                 <MatExpansionPanelDetails>
-                                    <MatTable Items="@cars" class="mat-elevation-z5" ShowPaging="false">
+                                    <MatTable Items="@course" class="mat-elevation-z5" ShowPaging="false">
                                         <MatTableHeader>
                                             <th>教师</th>
                                             <th>上课时间</th>
@@ -53,12 +52,12 @@
                                             <th>操作</th>
                                         </MatTableHeader>
                                         <MatTableRow>
-                                            <td style="width: 20%;">@context.Name</td>
-                                            <td style="width: 25%;">@String.Format("${0:f2}", @context.Price)</td>
-                                            <td style="width: 25%;">@context.Horsepower</td>
+                                            <td style="width: 20%;">@context.showclass.TeacherName</td>
+                                            <td style="width: 25%;">@context.showclass.newClassId</td>
+                                            <td style="width: 25%;">2</td>
                                             <td style="width: 15%;">4/40</td>
                                             <td style="width: 15%;">5</td>
-                                            <td><MatButton Raised="true">选课</MatButton></td>
+                                            <td><MatButton Raised="true">@context.state</MatButton></td>
                                         </MatTableRow>
                                     </MatTable>
                                 </MatExpansionPanelDetails>
@@ -74,6 +73,119 @@
         </div>
         
     </MatTab>
+    <MatTab Label="培养方案">
+        <div class="mat-layout-grid">
+            <div class="mat-layout-grid-inner">
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-1"></div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-10">
+                    <MatAccordion Multi="true">
+                        <MatExpansionPanel style="margin-top: 1%;">
+                        <MatExpansionPanelSummary>
+                        <MatExpansionPanelHeader>必修课程&emsp;&emsp;已修学分 / 要求学分： @csTemplate.currentcredits[0] / @csTemplate.needcredits[0]</MatExpansionPanelHeader>
+                        </MatExpansionPanelSummary>
+                        <MatExpansionPanelDetails>
+                            <MatTable Items="@csTemplate.Courselists[0]" class="mat-elevation-z5">
+                                <MatTableHeader>
+                                    <th>课程代码</th>
+                                    <th>课程名称</th>
+                                    <th>开课学院</th>
+                                    <th>实践学时</th>
+                                    <th>理论学时</th>
+                                    <th>学分</th>
+                                    <th>状态</th>
+                                </MatTableHeader>
+                                <MatTableRow>
+                                    <td style="width: 20%;">@context.CourseId</td>
+                                    <td style="width: 30%;">@context.Name</td>
+                                    <td style="width: 20%;">@context.Department</td>
+                                    <td style="width: 10%;">@context.PracticeHours</td>
+                                    <td style="width: 10%;">@context.TheoryHours</td>
+                                    <td style="width: 10%;">@context.Credit</td>
+                                    <td><MatButton Raised="true">未修</MatButton></td>
+                                </MatTableRow>
+                            </MatTable>
+                        </MatExpansionPanelDetails>
+                    </MatExpansionPanel>
+                    </MatAccordion>
+                </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-1"></div>
+            </div>
+        </div>
+         <div class="mat-layout-grid">
+            <div class="mat-layout-grid-inner">
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-1"></div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-10">
+                    <MatAccordion Multi="true">
+                        <MatExpansionPanel style="margin-top: 1%;">
+                        <MatExpansionPanelSummary>
+                        <MatExpansionPanelHeader>选修课程&emsp;&emsp;已修学分 / 要求学分：  @csTemplate.currentcredits[1] / @csTemplate.needcredits[1]</MatExpansionPanelHeader>
+                        </MatExpansionPanelSummary>
+                        <MatExpansionPanelDetails>
+                            <MatTable Items="@csTemplate.Courselists[1]" class="mat-elevation-z5">
+                               <MatTableHeader>
+                                    <th>课程代码</th>
+                                    <th>课程名称</th>
+                                    <th>开课学院</th>
+                                    <th>实践学时</th>
+                                    <th>理论学时</th>
+                                    <th>学分</th>
+                                    <th>状态</th>
+                                </MatTableHeader>
+                                <MatTableRow>
+                                    <td style="width: 20%;">@context.CourseId</td>
+                                    <td style="width: 30%;">@context.Name</td>
+                                    <td style="width: 20%;">@context.Department</td>
+                                    <td style="width: 10%;">@context.PracticeHours</td>
+                                    <td style="width: 10%;">@context.TheoryHours</td>
+                                    <td style="width: 10%;">@context.Credit</td>
+                                    <td><MatButton Raised="true">未修</MatButton></td>
+                                </MatTableRow>
+                            </MatTable>
+                        </MatExpansionPanelDetails>
+                    </MatExpansionPanel>
+                    </MatAccordion>
+                </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-1"></div>
+            </div>
+        </div>
+         <div class="mat-layout-grid">
+            <div class="mat-layout-grid-inner">
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-1"></div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-10">
+                    <MatAccordion Multi="true">
+                        <MatExpansionPanel style="margin-top: 1%;">
+                        <MatExpansionPanelSummary>
+                        <MatExpansionPanelHeader>公选课程&emsp;&emsp;已修学分 / 要求学分：  @csTemplate.currentcredits[2] / @csTemplate.needcredits[2]</MatExpansionPanelHeader>
+                        </MatExpansionPanelSummary>
+                        <MatExpansionPanelDetails>
+                            <MatTable Items="@csTemplate.Courselists[2]" class="mat-elevation-z5">
+                               <MatTableHeader>
+                                    <th>课程代码</th>
+                                    <th>课程名称</th>
+                                    <th>开课学院</th>
+                                    <th>实践学时</th>
+                                    <th>理论学时</th>
+                                    <th>学分</th>
+                                    <th>状态</th>
+                                </MatTableHeader>
+                                <MatTableRow>
+                                    <td style="width: 20%;">@context.CourseId</td>
+                                    <td style="width: 30%;">@context.Name</td>
+                                    <td style="width: 20%;">@context.Department</td>
+                                    <td style="width: 10%;">@context.PracticeHours</td>
+                                    <td style="width: 10%;">@context.TheoryHours</td>
+                                    <td style="width: 10%;">@context.Credit</td>
+                                    <td><MatButton Raised="true">未修</MatButton></td>
+                                </MatTableRow>
+                            </MatTable>
+                        </MatExpansionPanelDetails>
+                    </MatExpansionPanel>
+                    </MatAccordion>
+                </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-1"></div>
+            </div>
+        </div>
+    </MatTab>
     <MatTab Label="查看课表">
         Second Content
     </MatTab>
@@ -87,9 +199,12 @@
 @code
 {
     [Inject] IJSRuntime JS { get; set; }
-    IEnumerable<Course> courses;
+    List<newClass> classes;
+    List<Course> coursesList;
+    List<List<shownclass>> courses = new List<List<shownclass>>();
+    List<newClass> details;
     SearchModel myModel = new SearchModel();
-
+    Template csTemplate = new Template();
     User user;
 
     protected override async Task OnInitializedAsync()
@@ -103,78 +218,109 @@
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         user = await _userManager.GetUserAsync(authState.User);
         Console.WriteLine("Get User id:" + user.Id + " user name:" + user.UserName);
+        coursesList = await DbContext.Courses.ToListAsync();
+        csTemplate.setCourse(coursesList,coursesList,coursesList);
         await UpdateList();
     }
 
-
-    public class Car
-    {
-        public string Name { get; set; }
-        public double Price { get; set; }
-        public int Horsepower { get; set; }
-
-        public Car(string name, double price, int horsepower)
-        {
-            Name = name;
-            Price = price;
-            Horsepower = horsepower;
-        }
-    }
-
-    Car[] cars = new[]
-    {
-        new Car("Volkswagen Golf", 10000, 220),
-        new Car("Volkswagen Passat", 11000, 240),
-        new Car("Volkswagen Polo", 12000, 110),
-        new Car("Ford Focus", 13000, 200),
-        new Car("Ford Fiesta", 14000, 160),
-        new Car("Ford Fusion", 15000, 260),
-        new Car("Ford Mondeo", 16000, 120),
-    };
-
     async Task UpdateList()
     {
-        var selectcourses = from m in DbContext.Courses
-                    select m;
+        courses.Clear();
+        var selectclasses = from m in DbContext.newClass
+                select m;
         if (!string.IsNullOrEmpty(myModel.CourseName))
         {
-            selectcourses = selectcourses.Where(s => s.Name.Contains(myModel.CourseName));
+            selectclasses = selectclasses.Where(s => s.Course.Name.Contains(myModel.CourseName));
         }
         if (!string.IsNullOrEmpty(myModel.CourseID))
         {
-            selectcourses = selectcourses.Where(s => s.CourseId.Contains(myModel.CourseID));
+            selectclasses = selectclasses.Where(s => s.Course.CourseId.Contains(myModel.CourseID));
         }
-        if (!string.IsNullOrEmpty(myModel.Department))
+        if (!string.IsNullOrEmpty(myModel.TeacherName))
         {
-            selectcourses = selectcourses.Where(s => s.Department.Contains(myModel.Department));
+            selectclasses = selectclasses.Where(s => s.TeacherName.Contains(myModel.TeacherName));
         }
-        courses = await selectcourses.ToListAsync();
+        classes = selectclasses.ToList();
+        IEnumerable<IGrouping<string, newClass>> query = classes.GroupBy(x => x.Course.CourseId);
+        foreach (IGrouping<string, newClass> info in query)
+        {
+            details = info.ToList<newClass>();
+            List<shownclass> showclasslist = new List<shownclass>();
+            foreach(newClass c in details)
+            {
+                if(c.StuIDList.Contains(user.Id))
+                    showclasslist.Add(new shownclass(c,"退课"));
+                else
+                    showclasslist.Add(new shownclass(c,"选课"));
+            }
+            courses.Add(showclasslist); 
+        }
     }
     
     async Task search()
     {
-        var selectcourses = from m in DbContext.Courses
-                    select m;
+        courses.Clear();
+        var selectclasses = from m in DbContext.newClass
+                select m;
         if (!string.IsNullOrEmpty(myModel.CourseName))
         {
-            selectcourses = selectcourses.Where(s => s.Name.Contains(myModel.CourseName));
+            selectclasses = selectclasses.Where(s => s.Course.Name.Contains(myModel.CourseName));
         }
         if (!string.IsNullOrEmpty(myModel.CourseID))
         {
-            selectcourses = selectcourses.Where(s => s.CourseId.Contains(myModel.CourseID));
+            selectclasses = selectclasses.Where(s => s.Course.CourseId.Contains(myModel.CourseID));
         }
-        if (!string.IsNullOrEmpty(myModel.Department))
+        if (!string.IsNullOrEmpty(myModel.TeacherName))
         {
-            selectcourses = selectcourses.Where(s => s.Department.Contains(myModel.Department));
+            selectclasses = selectclasses.Where(s => s.TeacherName.Contains(myModel.TeacherName));
         }
-        courses = await selectcourses.ToListAsync();
+        classes = selectclasses.ToList();
+        IEnumerable<IGrouping<string, newClass>> query = classes.GroupBy(x => x.Course.CourseId);
+        foreach (IGrouping<string, newClass> info in query)
+        {
+            details = info.ToList<newClass>();
+            List<shownclass> showclasslist = new List<shownclass>();
+            foreach(newClass c in details)
+            {
+                if(c.StuIDList.Contains(user.Id))
+                    showclasslist.Add(new shownclass(c,"退课"));
+                else
+                    showclasslist.Add(new shownclass(c,"选课"));
+            }
+            courses.Add(showclasslist); 
+        }
     }
-
+    public class shownclass
+    {
+        public newClass showclass { get; set; }
+        public string state { get; set; }
+        public shownclass(newClass c, string s)
+        {
+            this.showclass=c;
+            this.state=s;
+        }
+    }
     public class SearchModel
     {
         public string CourseName { get; set; }
         public string CourseID { get; set; }
-        public string Department { get; set; }
+        public string TeacherName { get; set; }
+    }
+    public class Template
+    {
+        public List<int> needcredits = new List<int>();
+        public List<int> currentcredits= new List<int>();
+        public List<List<Course>> Courselists = new List<List<Course>>();
+        
+        public void setCourse(List<Course> c0, List<Course> c1, List<Course> c2)
+        {
+            needcredits.Clear();currentcredits.Clear();Courselists.Clear();
+            needcredits.Add(100);needcredits.Add(30);needcredits.Add(10);
+            currentcredits.Add(0);currentcredits.Add(0);currentcredits.Add(0);
+            this.Courselists.Add(c0);
+            this.Courselists.Add(c1);
+            this.Courselists.Add(c2);
+        }
     }
 
     protected override bool ShouldRender()

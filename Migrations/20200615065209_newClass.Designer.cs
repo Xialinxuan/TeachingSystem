@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TeachingSystem.Data;
@@ -10,9 +11,10 @@ using TeachingSystem.Data;
 namespace TeachingSystem.Migrations
 {
     [DbContext(typeof(TSSDbContext))]
-    partial class TSSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200615065209_newClass")]
+    partial class newClass
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,29 +50,29 @@ namespace TeachingSystem.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "a7784619-63d9-46d1-afdd-0035b4e607fb",
-                            ConcurrencyStamp = "f56e0824-6c5c-4a1d-afc2-2b1420853261",
+                            Id = "76cf9b9a-9b15-44e8-8a9f-d556262623ab",
+                            ConcurrencyStamp = "1e4e205a-c334-4606-8c9e-4d16c4de8c02",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "15fbdb29-11f1-48cb-89c5-023cc5112aad",
-                            ConcurrencyStamp = "6fc20187-725d-4a6c-a559-e88462349d4b",
+                            Id = "d55c0c4a-4fb2-47ed-ac1e-034966eef966",
+                            ConcurrencyStamp = "4af0fa6e-6172-4870-99c8-3ebbe2bdd194",
                             Name = "Teacher",
                             NormalizedName = "TEACHER"
                         },
                         new
                         {
-                            Id = "61e3b7c9-eff0-4893-b515-4cf516b6608b",
-                            ConcurrencyStamp = "4d95bef7-0e52-4b2a-8681-39e68716be3f",
+                            Id = "07eb93d9-4301-4511-8f4c-db7690b12f66",
+                            ConcurrencyStamp = "0909f8a1-39a9-466e-8790-1f3ccaae4e65",
                             Name = "Student",
                             NormalizedName = "STUDENT"
                         },
                         new
                         {
-                            Id = "059dba58-ba18-45ff-80b4-02bfa7861a56",
-                            ConcurrencyStamp = "470775d7-fd66-484c-88b8-6dcb034b5505",
+                            Id = "4aeb340b-a5a7-447c-a73f-fe4e176b71f0",
+                            ConcurrencyStamp = "7bdcc98e-7dbe-43de-8bca-8cb7ff8fcfd9",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         });
