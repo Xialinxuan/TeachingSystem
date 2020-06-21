@@ -1,0 +1,346 @@
+
+@using System.ComponentModel.DataAnnotations
+@using System.IO
+@using System.Net.Http.Headers
+@using Microsoft.AspNetCore.Identity;
+
+@inject IMatToaster Toaster
+@inject UserManager<User> _userManager
+
+@if(_class != null)
+{
+    <EditForm Model="_class" OnValidSubmit="Save" FullWidth="true"> 
+        <DataAnnotationsValidator/>
+            @if(@create) {
+                <p>  
+                    <MatTextField Label="ClassId" @bind-Value="_class.ClassId" FullWidth="true"/>
+                </p>
+            }
+            <p>
+                <MatSelectItem Label="课程" @bind-Value="courseProperty" Items="@courseItem" FullWidth="true">
+                    <ItemTemplate Context="crs">
+                        <span>@crs?.Name</span>
+                    </ItemTemplate>
+                </MatSelectItem>
+            </p>
+            <p>
+                <MatSelectItem Label="授课教师" @bind-Value="_class.Teacher" Items="@userItem" FullWidth="true">
+                    <ItemTemplate Context="user">
+                        <span>@user?.Name</span>
+                    </ItemTemplate>
+                </MatSelectItem>
+            </p>
+
+            <p>
+                <MatSelectItem Label="教室" @bind-Value="classroomProperty" Items="@classRoomItem" FullWidth="true">
+                    <ItemTemplate Context="room">
+                        <span>@room?.ClassroomName</span>
+                    </ItemTemplate>
+                </MatSelectItem>
+            </p>
+            <p>需要选择的学时数: @teachHours    已选择的学时数: @choseNum</p>
+            <p>调整上课时间</p>
+                @for (int i = 0; i < 13; i++) {
+                    <div>
+                        @for (int j = 0; j < 7; j++) {
+                            int index = i * 7 + j;
+                            <MatButton Disabled="@disable[index]" Type="button" Raised="@isChecked[index]" @onclick="@(() => btnClickAtIndex(@index))">@indexToTimeStr(@index)</MatButton>
+                        }
+                    </div>
+                }
+
+            <p style="text-align: center">
+                <MatButton Type="submit" Raised="true">保存</MatButton>
+            </p>
+    </EditForm>
+}
+
+@code {
+
+    [Parameter]
+    public bool create{get;set;} = false;
+
+    [Parameter]
+    public string id{get;set;}
+
+    [Parameter]
+    public Action OnSave{get;set;}
+
+    Class _class;
+
+    Course course;
+    Classroom classroom;
+
+    public Course courseProperty
+    {
+        get {return course;}
+        set {
+            course = value;
+            onCourseChange();
+        }
+    }
+
+    public Classroom classroomProperty
+    {
+        get {return classroom;}
+        set {
+            classroom = value;
+            onClassroomChange();
+        }
+    }
+
+    int teachHours; // 教学班对应课程的学时
+    int choseNum = 0;   // 选中的个数
+
+    List<Classroom> classRoomItem;
+    List<Course> courseItem;
+    List<User> userItem;
+
+    bool [] isChecked = new bool [7 * 13];
+    bool [] disable = new bool [7 * 13];
+
+    async Task Save() {
+        if (choseNum > teachHours) {
+            Toaster.Add("选择的学时数大于课程的学时数了，请修改。", MatToastType.Danger);
+            return;
+        }
+
+        // 根据用户选中的情况，生成 teachTime
+        List<int> teachTime = new List<int>();
+        for (int i = 0; i < 7; i++) {
+            String bstr="";
+            for (int j = 0; j < 13; j++) {
+                int index = j * 7 + i;
+                if (isChecked[index]) {
+                   bstr += "1";
+                } else {
+                    bstr += "0";
+                }
+            }
+            teachTime.Add(Convert.ToInt32(bstr, 2));
+        }
+
+        _class.Course = course;
+        _class.Classroom = classroom;
+        _class.TeachTime = teachTime;
+
+        if(create) {
+            if(await DbContext.Classes.Where(c => c.ClassId == _class.ClassId).CountAsync() != 0) {
+                Toaster.Add("已存在同样序号的教学班，请修改。", MatToastType.Danger);
+
+            } else {
+                await DbContext.Classes.AddAsync(_class);
+                await DbContext.SaveChangesAsync();
+                OnSave();
+            }
+        } else {
+            await DbContext.SaveChangesAsync();
+            OnSave();
+        }
+    }
+
+    // 设置课程
+    // 根据课程更新 teachHour
+    // 设置好
+    void onCourseChange() {
+        updateTeachHour(courseProperty);
+        updateCheckList(_class);    // 先调用这个，会同时更新 choseNum
+        updateDisableList();        // 再调用这个
+    }
+
+    // 换教室
+    void onClassroomChange() {
+        if (classroomProperty == null) {
+            return;
+        }
+        if (classroomProperty == _class.Classroom) {
+            updateTeachHour(courseProperty);
+            updateCheckList(_class);    // 先调用这个，会同时更新 choseNum
+            updateDisableList();        // 再调用这个
+            return;
+        }
+        for (int i = 0; i < 7 * 13; i++) {
+            choseNum = 0;
+            isChecked[i] = false;   // 清除勾选记录
+            disable[i] = false;
+        }
+        updateDisableList();        // 再调用这个
+
+        // 查询所有用到该教室的教学班
+        
+        /*
+        List<Class> classes;
+        classes = DbContext.Classes.Include("Classroom").Where(c => c.Classroom == classroomProperty).ToList();;
+        List<int> times = new List<int>();
+        for (int i = 0; i < 7; i++) {
+            times.Add(0);
+        }
+
+        if (classes.Count() > 0) {
+            for (int i = 0; i < classes.Count(); i++) {
+                if (classes[i].TeachTime != null) {
+                    for (int j = 0; j < 7; j++) {
+                        times[j] |= classes[i].TeachTime[j];
+                    }
+                }
+            }
+        }
+
+        // 将该教室被其它教学班被占用的时间段排除
+        for (int i = 0; i < 7; i++) {
+            int time = times[i];
+            for (int j = 12; j >= 0; j--) {
+                int index = j * 7 + i;
+                    if ((time & 1) == 1) {
+                        disable[index] = true;
+                    } 
+                time = time >> 1;
+            }
+        }
+        */
+    }
+
+    // 根据当前教学班时间设置 isCheck[] 数组
+    void updateCheckList(Class _class) {
+        choseNum = 0;
+        if (_class.TeachTime != null) {
+            for (int i = 0; i < 7; i++) {
+                int time = _class.TeachTime[i];
+                for (int j = 12; j >= 0; j--) {
+                    int index = j * 7 + i;
+                        if ((time & 1) == 1) {
+                            isChecked[index] = true;
+                            choseNum++;
+                        } 
+                    time = time >> 1;
+                }
+            }
+        }
+    }
+
+    // 根据 choseNum 与 teachHours 的情况，更新 disable 列表
+    void updateDisableList() {
+        if (choseNum >= teachHours) {
+            for (int i = 0; i < 7 * 13; i++) {
+                if (!isChecked[i])
+                    disable[i] = true;
+                else
+                    disable[i] = false;
+            }
+        } else {
+            // 查询所有用到该教室的教学班
+            List<Class> classes;
+            classes = DbContext.Classes.Include("Classroom").Where(c => c.Classroom == classroomProperty).ToList();;
+            List<int> times = new List<int>();
+            for (int i = 0; i < 7; i++) {
+                times.Add(0);
+            }
+            if (classes.Count() > 0) {
+                for (int i = 0; i < classes.Count(); i++) {
+                    if (classes[i].TeachTime != null && classes[i].ClassId != _class.ClassId) { // 自己教学班不算上去
+                        for (int j = 0; j < 7; j++) {
+                            times[j] |= classes[i].TeachTime[j];
+                        }
+                    }
+                }
+            }
+            // 将该教室被其它教学班被占用的时间段排除
+            for (int i = 0; i < 7; i++) {
+                int time = times[i];
+                for (int j = 12; j >= 0; j--) {
+                    int index = j * 7 + i;
+                        if ((time & 1) == 1) {
+                            disable[index] = true;
+                        } 
+                    time = time >> 1;
+                }
+            }
+
+            for (int i = 0; i < 7*13; i++) {
+                if (isChecked[i])
+                    disable[i] = false;
+            }
+        }
+    }
+
+    void updateTeachHour(Course course) {
+        if (course == null) {
+            teachHours = 0;
+        } else {
+            teachHours = course.PracticeHours + course.TheoryHours;
+        }
+    }
+
+    async void btnClickAtIndex(int index) {
+        if (isChecked[index]) {
+            isChecked[index] = false;
+            choseNum--;
+        } else {
+            isChecked[index] = true;
+            choseNum++;
+        }
+        updateDisableList();
+    }
+
+    String indexToTimeStr(int index) {
+        String timeStr = "";
+        int day = index % 7;
+        int tid = index / 7;
+        
+        switch(day) {
+            case 0: timeStr += "周一 ";break;
+            case 1: timeStr += "周二 ";break;
+            case 2: timeStr += "周三 ";break;
+            case 3: timeStr += "周四 ";break;
+            case 4: timeStr += "周五 ";break;
+            case 5: timeStr += "周六 ";break;
+            case 6: timeStr += "周日 ";break;
+        }
+        switch(tid) {
+            case 0: timeStr += "08:00-08:45"; break;
+            case 1: timeStr += "08:50-09:35"; break;
+            case 2: timeStr += "09:50-10:35"; break;
+            case 3: timeStr += "10:40-11:25"; break;
+            case 4: timeStr += "11:30-12:15"; break;
+            case 5: timeStr += "13:15-14:00"; break;
+            case 6: timeStr += "14:05-14:50"; break;
+            case 7: timeStr += "14:55-15:40"; break;
+            case 8: timeStr += "15:55-16:40"; break;
+            case 9: timeStr += "16:45-17:30"; break;
+            case 10: timeStr += "18:30-19:15"; break;
+            case 11: timeStr += "19:20-20:05"; break;
+            case 12: timeStr += "20:10-20:55"; break;
+        }
+        return timeStr;
+    }
+
+    protected override async Task OnInitializedAsync() {
+
+        // 查询所有教室
+        classRoomItem = DbContext.Classrooms.ToList();
+        // 查询所有课程
+        courseItem = DbContext.Courses.ToList();
+        // 查询所有教师用户
+        userItem = _userManager.Users.ToList();
+        
+        for (int i = userItem.Count() - 1; i >= 0; i--) {
+            User usr = userItem[i];
+            if (await _userManager.IsInRoleAsync(usr, "Teacher")) {
+                
+            } else {
+                userItem.RemoveAt(i);
+            }
+        }
+
+        if(create) {
+            _class = new Class();
+
+        } else {
+            _class = await DbContext.Classes.Include("Classroom").Include("Course").Include("Teacher").SingleAsync(c => c.ClassId == id);
+            
+            courseProperty = _class.Course;
+            classroomProperty = _class.Classroom;
+        }
+    }
+}
+ 

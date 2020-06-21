@@ -1,0 +1,478 @@
+@page "/ClassArranger/Manage/Class"
+@using Microsoft.AspNetCore.Components
+
+@inject IMatToaster Toaster
+
+<h2>自动排课</h2>
+<div class="mat-layout-grid">
+    <div class="mat-layout-grid-inner">
+        
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+            <MatButton Icon="add" Link="/ClassArranger/Manage/Class/Create">添加教学班</MatButton>
+            <MatButton Icon="archive" Link="/ClassArranger/Manage/ClassRoom">教室信息管理</MatButton>
+            <MatButton Icon="flash_on" @onclick="@(_ => {arrangeDialogIsOpen=true;})">自动排课</MatButton>
+            <MatButton Icon="delete" @onclick="@(_ => {clearDialogIsOpen=true;})">清除排课结果</MatButton>
+        </div>
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+            <MatPaginator Length="@size" PageSize="@pageSize" Page="OnPage"></MatPaginator>
+        </div>
+    </div>
+</div>
+<p>
+<MatProgressBar Closed="@isCloseProgress" Progress="@progress"></MatProgressBar>
+</p>
+ <table class="table">
+    <thead>
+        <tr>
+            <th scope="col">ClassId</th>
+            <th scope="col">课程</th>
+            <th scope="col">授课教师</th>
+            <th scope="col">教室</th>
+            <th scope="col">上课时间</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @if(classes != null){
+            foreach(var _class in classes){
+                <tr>
+                    <td>@_class.ClassId</td>
+                    <td>@_class.Course</td>
+                    <td>@_class.Teacher</td>
+                    <td>@_class.Classroom</td>
+                    <td>
+                        @if (_class.TeachTime != null) {
+                            @for(int i = 0; i < 7; i++) {
+                                int time = _class.TeachTime[i];
+                                @for(int j = 12; j >= 0; j--) {
+                                    int index = j * 7 + i;
+                                    if ((time & 1) == 1) {
+                                        <div>@indexToTimeStr(@index)</div>
+                                    } 
+                                    time = time >> 1;
+                                }
+                            }
+                        }
+                    </td>
+                    <td><a href="/ClassArranger/Manage/Class/Edit/@_class.ClassId">编辑</a>|<button type="button" class="btn btn-link" @onclick="@(_ => {classToDelete=_class;dialogIsOpen=true;})">删除</button></td>
+                </tr>
+            }
+        } else {
+            <div class="spinner-border" role="status">
+                <span class="sr-only">加载中……</span>
+            </div>
+        }
+    </tbody>
+</table>
+    <MatDialog @bind-IsOpen="@dialogIsOpen">
+        <MatDialogTitle>删除教学班</MatDialogTitle>
+        <MatDialogContent>
+            <p>真的要删除 @classToDelete?.ClassId 吗？这个操作无法恢复</p>
+        </MatDialogContent>
+        <MatDialogActions>
+            <MatButton OnClick="@(e => { dialogIsOpen = false; })">否</MatButton>
+            <MatButton OnClick="@DeleteClass">删除</MatButton>
+        </MatDialogActions>
+    </MatDialog>
+
+    <MatDialog @bind-IsOpen="@clearDialogIsOpen">
+        <MatDialogTitle>清除排课信息</MatDialogTitle>
+        <MatDialogContent>
+            <p>该操作会清除所有教学班的设置好的教室与教学时间信息，确定要清除吗?</p>
+        </MatDialogContent>
+        <MatDialogActions>
+            <MatButton OnClick="@(e => { clearDialogIsOpen = false; })">否</MatButton>
+            <MatButton OnClick="@ClearInfo">清除</MatButton>
+        </MatDialogActions>
+    </MatDialog>
+
+    <MatDialog @bind-IsOpen="@arrangeDialogIsOpen">
+        <MatDialogTitle>自动排课</MatDialogTitle>
+        <MatDialogContent>
+            <p>确定开始自动排课吗?(部分教学班已经设置好教室与时间，系统会在此基础上进行排课，如果要完全重新排课，请先清除排课信息)</p>
+        </MatDialogContent>
+        <MatDialogActions>
+            <MatButton OnClick="@(e => { arrangeDialogIsOpen = false; })">否</MatButton>
+            <MatButton OnClick="@ArrangeClass">开始排课</MatButton>
+        </MatDialogActions>
+    </MatDialog>
+@code {
+    int page = 0;
+    int pageSize = 25;
+    int size = 0;
+    bool dialogIsOpen = false;
+    bool clearDialogIsOpen = false;
+    bool arrangeDialogIsOpen = false;
+
+    double progress = 0;    // 排课进度
+    bool isCloseProgress = true;
+
+    IEnumerable<Class> classes;
+    Class classToDelete = null;
+
+    List<String> Times;
+
+    String indexToTimeStr(int index) {
+        String timeStr = "";
+        int day = index % 7;
+        int tid = index / 7;
+        
+        switch(day) {
+            case 0: timeStr += "周一 ";break;
+            case 1: timeStr += "周二 ";break;
+            case 2: timeStr += "周三 ";break;
+            case 3: timeStr += "周四 ";break;
+            case 4: timeStr += "周五 ";break;
+            case 5: timeStr += "周六 ";break;
+            case 6: timeStr += "周日 ";break;
+        }
+        switch(tid) {
+            case 0: timeStr += "08:00-08:45"; break;
+            case 1: timeStr += "08:50-09:35"; break;
+            case 2: timeStr += "09:50-10:35"; break;
+            case 3: timeStr += "10:40-11:25"; break;
+            case 4: timeStr += "11:30-12:15"; break;
+            case 5: timeStr += "13:15-14:00"; break;
+            case 6: timeStr += "14:05-14:50"; break;
+            case 7: timeStr += "14:55-15:40"; break;
+            case 8: timeStr += "15:55-16:40"; break;
+            case 9: timeStr += "16:45-17:30"; break;
+            case 10: timeStr += "18:30-19:15"; break;
+            case 11: timeStr += "19:20-20:05"; break;
+            case 12: timeStr += "20:10-20:55"; break;
+        }
+        return timeStr;
+    }
+
+    int SortClass(Class c1, Class c2) {
+        var t1 = c1.Course.PracticeHours + c1.Course.TheoryHours;
+        var t2 = c2.Course.PracticeHours + c2.Course.TheoryHours;
+        if (t1 > t2) {
+            return 1;
+        } else if (t1 < t2) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
+    
+    // 计算7个二进制位一的个数，也就是使用的课时
+    int getUsedHour(List<int> times) {
+        if (times == null)
+            return 0;
+        int cnt = 0;
+
+        for (int i = 0; i < 7; i++) {
+            int t = times[i];
+            while(t != 0) {
+                t = t & (t - 1);
+                cnt++;
+            }
+        }
+        return cnt;
+    }
+
+    // 计算7个二进制位0的个数, 也就是空余的时间
+    int getFreeHour(List<int> times) {
+        int usedHour = getUsedHour(times);
+        return 7 * 13 - usedHour;
+    }
+
+    async Task ClearInfo() {
+        List<Class> classes = DbContext.Classes.ToList();
+
+        foreach(var _class in classes) {
+            _class.Classroom = null;
+            _class.TeachTime = null;
+        }
+        await DbContext.SaveChangesAsync();
+        clearDialogIsOpen = false;
+        await UpdateList();
+        StateHasChanged();
+        Toaster.Add("教室与教学时间信息清除成功", MatToastType.Success, null, null, config => {
+            config.RequireInteraction = true;
+            config.ShowCloseButton = true;
+        });
+    }
+
+    // 自动排课
+    async Task ArrangeClass() {
+        isCloseProgress = false;
+        progress = 0;
+        Toaster.Add("开始排课", MatToastType.Info);
+        arrangeDialogIsOpen = false;
+
+        int [] mask = new int []{
+            Convert.ToInt32("1000000000000", 2),    // 第 1节课
+            Convert.ToInt32("0100000000000", 2),    // 第 2节课
+            Convert.ToInt32("0010000000000", 2),    // 第 3节课
+            Convert.ToInt32("0001000000000", 2),    // 第 4节课
+            Convert.ToInt32("0000100000000", 2),    // 第 5节课
+            Convert.ToInt32("0000010000000", 2),    // 第 6节课
+            Convert.ToInt32("0000001000000", 2),    // 第 7节课
+            Convert.ToInt32("0000000100000", 2),    // 第 8节课
+            Convert.ToInt32("0000000010000", 2),    // 第 9节课
+            Convert.ToInt32("0000000001000", 2),    // 第10节课
+            Convert.ToInt32("0000000000100", 2),    // 第11节课
+            Convert.ToInt32("0000000000010", 2),    // 第12节课
+            Convert.ToInt32("0000000000001", 2),    // 第13节课
+        };
+        // 所有需要排课的教学班
+        List<Class> classes = await DbContext.Classes.Include("Course").Include("Classroom").ToListAsync();
+        
+        progress = 0.1;
+        Toaster.Add("正在对教学班初步排序", MatToastType.Info);
+        // classes.Sort(SortClass);    // 排序，先对时间长的进行排课
+        classes.OrderBy(s => s.Course.PracticeHours + s.Course.TheoryHours);
+
+        // 所有的教室
+        List<Classroom> classrooms = await DbContext.Classrooms.ToListAsync();
+        Dictionary<int, List<int>> classroomTimeDict = new Dictionary<int, List<int>>();   // 记录每个教室使用的时间
+        
+        progress = 0.2;
+        // 遍历所有教室，初始化 classroomTimeDict
+        foreach(var classroom in classrooms) {
+            int cid = classroom.ClassroomId;
+            List<int> times = new List<int>();
+            for (int i = 0; i < 7; i++) {
+                times.Add(0);
+            }
+            classroomTimeDict.Add(cid, times);
+        }
+        
+        // 遍历所有教学班, 根据教学班已有的教室与时间设置 classroomTimeDict
+        foreach(var _class in classes) {
+            if (_class.Course == null) {
+                //Console.WriteLine(_class.Course);
+                String errorInfo = String.Format("排课失败: 教学班 'ClassId={0}' 未设置课程信息", _class.ClassId);
+                Toaster.Add(errorInfo, MatToastType.Danger, null, null, config => {
+                    config.RequireInteraction = true;
+                    config.ShowCloseButton = true;
+                });
+                isCloseProgress = true;
+                return;
+            }
+
+            if (_class.Classroom != null && _class.TeachTime != null) {
+                int cid = _class.Classroom.ClassroomId;
+                List<int> times = _class.TeachTime; // 当前教室被占用的时间
+                for (int i = 0; i < 7; i++) {
+                    classroomTimeDict[cid][i] |= times[i];
+                }
+            }
+
+            // 设置好 TeachTime
+            if (_class.TeachTime == null) {
+                _class.TeachTime = new List<int>();
+                for (int i = 0; i < 7; i++) {
+                    _class.TeachTime.Add(0);
+                }          
+            }
+        }
+
+        progress = 0.3;
+        Toaster.Add("正在排指定教室的教学班", MatToastType.Info);
+
+        // 先排已经指定好教室的教学班
+        foreach(var _class in classes) {
+            if (_class.Classroom != null) { // 教室已经指定好了
+                int cid = _class.Classroom.ClassroomId;
+                List<int> times = classroomTimeDict[cid];   // 当前教室的使用情况
+                int freeHour = getFreeHour(times);    // 该教室空余的时间
+                // 总学时
+                var teachHour = _class.Course.PracticeHours + _class.Course.TheoryHours;
+                // 已经排好的学时
+                var usedHour = getUsedHour(_class.TeachTime);
+                 // 剩余需要排课的学时数
+                var remainHour = teachHour - usedHour;
+
+                //Console.WriteLine(remainHour);
+                //Console.WriteLine(teachHour);
+                //Console.WriteLine(usedHour);
+
+                if (remainHour == 0) {  // 不用排了
+                    continue;
+                } else if (remainHour < 0) {    // 出问题了
+                    Toaster.Add("出问题了", MatToastType.Danger, null, null, config => {
+                        config.RequireInteraction = true;
+                        config.ShowCloseButton = true;
+                    });
+                    isCloseProgress = true;
+                    return;
+                }
+
+                bool success = false;
+                if (freeHour < remainHour) {
+                    String errorInfo = String.Format("排课失败: 教学班 'ClassId={0}' 指定的教室空余时间不足，请调整", _class.ClassId);
+                    Toaster.Add(errorInfo, MatToastType.Danger, null, null, config => {
+                        config.RequireInteraction = true;
+                        config.ShowCloseButton = true;
+                    });
+                    isCloseProgress = true;
+                    return;
+                } else {
+                    for (int i = 0; i < 7; i++) {   // 遍历每一天
+                        for (int j = 0; j < 13; j++) {  // 遍历每节课
+                            
+                            if ((times[i] & mask[j]) == 0) { // 这节课空着
+                                _class.TeachTime[i] |= mask[j];     // 排好
+                                classroomTimeDict[cid][i] |= mask[j];
+                                remainHour--;
+                                if (remainHour == 0) {
+                                    success = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (success) {
+                            break;
+                        }
+                    }
+                    if (!success) {
+                        Toaster.Add("排课失败: 未知原因, 位于xxxx1", MatToastType.Danger, null, null, config => {
+                            config.RequireInteraction = true;
+                            config.ShowCloseButton = true;
+                        });
+                        isCloseProgress = true;
+                        return;
+                    }
+                }
+            }
+        }
+
+        progress = 0.5;
+
+        Toaster.Add("正在排剩余的教学班", MatToastType.Info);
+        
+        double TotalNum = classes.Count();
+        double current = 0;
+        // 对剩下的教学班进行排课
+        foreach(var _class in classes) {
+            // Console.WriteLine(_class.Classroom == null);
+            if (_class.Classroom == null) {  // 教室没有要求
+                var teachHour = _class.Course.PracticeHours + _class.Course.TheoryHours;
+                //Console.WriteLine(teachHour);
+                // 已经排好的学时
+                var usedHour = getUsedHour(_class.TeachTime);
+                //Console.WriteLine(usedHour);
+                 // 剩余需要排课的学时数
+                var remainHour = teachHour - usedHour;
+                //Console.WriteLine(remainHour);
+
+                if (remainHour == 0) {  // 不用排了
+                    continue;
+                } else if (remainHour < 0) {    // 出问题了
+                    Toaster.Add("出问题了", MatToastType.Danger, null, null, config => {
+                        config.RequireInteraction = true;
+                        config.ShowCloseButton = true;
+                    });
+                    isCloseProgress = true;
+                    return;
+                }
+
+                bool success = false;
+                foreach(var classroom in classrooms) {  // 遍历所有可能的教室
+                    int cid = classroom.ClassroomId;
+                    List<int> times = classroomTimeDict[cid];// 当前教室的使用情况
+                    int freeHour = getFreeHour(times);    // 该教室空余的时间
+                    if (freeHour >= remainHour) {   // 这样才能排
+                        for (int i = 0; i < 7; i++) {   // 遍历每一天
+                            for (int j = 0; j < 13; j++) {  // 遍历每节课
+                                @* Console.WriteLine(String.Format("i{0} j{1}", i, j));
+                                Console.WriteLine(times[i]);
+                                Console.WriteLine(mask[j]); *@
+                                if ((times[i] & mask[j]) == 0) {
+                                    _class.TeachTime[i] |= mask[j];     // 排好
+                                    classroomTimeDict[cid][i] |= mask[j];
+                                    remainHour--;
+                                   
+                                    if (remainHour == 0) {
+                                        _class.Classroom = classroom;
+                                        success = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (success) {
+                                break;
+                            }
+                        }
+                        if (!success) {
+                            Toaster.Add("排课失败: 未知原因, 位于xxxx2", MatToastType.Danger, null, null, config => {
+                                config.RequireInteraction = true;
+                                config.ShowCloseButton = true;
+                            });
+                            isCloseProgress = true;
+                            return;
+                        } else {
+                            break;
+                        }
+                    }
+                    // Console.WriteLine("DDDDDDDEBUG****");
+                }
+            } 
+
+            progress = 0.5 + current / TotalNum * 0.5;
+            current++;
+            //Console.WriteLine(current);
+        }
+
+        progress = 1;
+        isCloseProgress = true;
+        Toaster.Add("排课成功", MatToastType.Success, null, null, config => {
+            config.RequireInteraction = true;
+            config.ShowCloseButton = true;
+        });
+
+        await DbContext.SaveChangesAsync();
+        await UpdateList();
+        StateHasChanged();
+    }
+
+    async Task OnPage(MatPaginatorPageEvent e)
+    {
+        pageSize = e.PageSize;
+        page = e.PageIndex;
+        await UpdateList();
+        StateHasChanged();
+    }
+
+    async Task DeleteClass() {
+        DbContext.Classes.Remove(classToDelete);
+        DbContext.SaveChanges();
+        await UpdateList();
+        dialogIsOpen = false;
+    }
+    async Task UpdateList()
+    {
+        classes = await DbContext.Classes.Include("Course").Include("Classroom").Include("Teacher").Skip(page * pageSize).Take(pageSize).ToListAsync();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        size = await DbContext.Classes.CountAsync();
+
+        if (size == 0 && false)  // 随机生成教学班
+        {  
+            // 查询所有课程
+            List<Course> allCourses = DbContext.Courses.ToList();
+            
+            int id = 0;
+            foreach (var course in allCourses) {
+                for (int i = 0; i < 4; i++) {   // 每个课程生成四个教学班
+                    var _class = new TeachingSystem.Data.Class{
+                        ClassId=id.ToString(),
+                        Course=course
+                        };
+                    id++;
+                    DbContext.Classes.Add(_class);
+                }
+            }
+            DbContext.SaveChanges();  
+
+        }
+
+        await UpdateList();
+    }
+}

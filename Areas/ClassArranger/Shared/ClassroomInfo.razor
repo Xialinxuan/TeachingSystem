@@ -1,0 +1,86 @@
+
+@using System.ComponentModel.DataAnnotations
+@using System.IO
+@using System.Net.Http.Headers
+@using Microsoft.AspNetCore.Identity;
+
+@inject IMatToaster Toaster
+
+<EditForm Model="classRoom" OnValidSubmit="Save">
+    <DataAnnotationsValidator/>
+        <p>
+            <MatTextField Label="教室名称" @bind-Value="classRoom.ClassroomName" FullWidth="true"/>
+            <ValidationMessage For="@(() => classRoom.ClassroomName)"/>
+        </p>
+
+        <p>
+            <MatTextField Label="所在校区" @bind-Value="classRoom.Campus" FullWidth="true"/>
+            <ValidationMessage For="@(() => classRoom.Campus)"/>
+        </p>
+
+        <p>
+            <MatTextField Label="建筑" @bind-Value="classRoom.Building" FullWidth="true"/>
+            <ValidationMessage For="@(() => classRoom.Building)"/>
+        </p>
+
+        <p>
+            <MatTextField Label="房间号" @bind-Value="classRoom.RoomNumber" FullWidth="true"/>
+            <ValidationMessage For="@(() => classRoom.Building)"/>
+        </p>
+
+        <p>
+            <MatTextField Label="容量" @bind-Value="classRoom.Capacity" FullWidth="true"/>
+            <ValidationMessage For="@(() => classRoom.Capacity)"/>
+        </p>
+
+        <p style="text-align: center">
+            <MatButton Type="submit" Raised="true">保存</MatButton>
+        </p>
+            
+</EditForm>
+
+
+ 
+@code {
+
+    [Parameter]
+    public bool create{get;set;} = false;
+
+    [Parameter]
+    public int id{get;set;}
+
+    [Parameter]
+    public Action OnSave{get;set;}
+
+    Classroom classRoom;
+
+    async Task Save() {
+        if(create) {
+            if(await DbContext.Classrooms.Where(c => c.ClassroomId == classRoom.ClassroomId).CountAsync() != 0) {
+                Toaster.Add("已存在同样序号的教室，请修改。", MatToastType.Danger);
+
+            }else {
+                await DbContext.Classrooms.AddAsync(classRoom);
+                await DbContext.SaveChangesAsync();
+
+                OnSave();
+            }
+        }else{
+            await DbContext.SaveChangesAsync();
+            OnSave();
+        }
+            
+
+    }
+
+    protected override async Task OnInitializedAsync() {
+
+        if(create) {
+            classRoom = new Classroom();
+        } else {
+            classRoom = await DbContext.Classrooms.SingleAsync(c => c.ClassroomId == id);
+        }
+    }
+   
+}
+ 
