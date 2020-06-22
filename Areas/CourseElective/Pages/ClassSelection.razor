@@ -39,7 +39,7 @@
                             foreach(var course in courses){
                                 <MatExpansionPanel style="margin-top: 1%;">
                                 <MatExpansionPanelSummary>
-                                <MatExpansionPanelHeader>@course[0].showclass.Course.Name</MatExpansionPanelHeader>
+                                <MatExpansionPanelHeader>(@course[0].showclass.Course.CourseId) @course[0].showclass.Course.Name ——@course[0].showclass.Course.Credit 学分</MatExpansionPanelHeader>
                                 </MatExpansionPanelSummary>
                                 <MatExpansionPanelDetails>
                                     <MatTable Items="@course" class="mat-elevation-z5" ShowPaging="false">
@@ -52,11 +52,24 @@
                                             <th>操作</th>
                                         </MatTableHeader>
                                         <MatTableRow>
-                                            <td style="width: 20%;">@context.showclass.TeacherName</td>
-                                            <td style="width: 25%;">@context.showclass.newClassId</td>
-                                            <td style="width: 25%;">2</td>
-                                            <td style="width: 15%;">4/40</td>
-                                            <td style="width: 15%;">5</td>
+                                            <td style="width: 20%;">@context.showclass.Teacher.Name</td>
+                                            <td style="width: 25%;">
+                                                @if (context.showclass.TeachTime != null) {
+                                                    @for(int i = 0; i < 7; i++) {
+                                                        int time = context.showclass.TeachTime[i];
+                                                        @for(int j = 12; j >= 0; j--) {
+                                                            int index = j * 7 + i;
+                                                            if ((time & 1) == 1) {
+                                                                <div>@indexToTimeStr(@index)</div>
+                                                            } 
+                                                            time = time >> 1;
+                                                        }
+                                                    }
+                                                }
+                                            </td>
+                                            <td style="width: 25%;">@context.showclass.Classroom.ClassroomName</td>
+                                            <td style="width: 15%;">@context.showclass.Students.Count / @context.showclass.Classroom.Capacity</td>
+                                            <td style="width: 15%;">0</td>
                                             <td><MatButton Raised="true">@context.state</MatButton></td>
                                         </MatTableRow>
                                     </MatTable>
@@ -199,10 +212,10 @@
 @code
 {
     [Inject] IJSRuntime JS { get; set; }
-    List<newClass> classes;
+    List<Class> classes;
     List<Course> coursesList;
     List<List<shownclass>> courses = new List<List<shownclass>>();
-    List<newClass> details;
+    List<Class> details;
     SearchModel myModel = new SearchModel();
     Template csTemplate = new Template();
     User user;
@@ -217,7 +230,6 @@
         }
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         user = await _userManager.GetUserAsync(authState.User);
-        Console.WriteLine("Get User id:" + user.Id + " user name:" + user.UserName);
         coursesList = await DbContext.Courses.ToListAsync();
         csTemplate.setCourse(coursesList,coursesList,coursesList);
         await UpdateList();
@@ -226,7 +238,7 @@
     async Task UpdateList()
     {
         courses.Clear();
-        var selectclasses = from m in DbContext.Classes
+        var selectclasses = from m in DbContext.Classes.Include("Classroom").Include("Course").Include("Teacher").Include("Students")
                 select m;
         if (!string.IsNullOrEmpty(myModel.CourseName))
         {
@@ -236,19 +248,19 @@
         {
             selectclasses = selectclasses.Where(s => s.Course.CourseId.Contains(myModel.CourseID));
         }
-        @* if (!string.IsNullOrEmpty(myModel.TeacherName))
+        if (!string.IsNullOrEmpty(myModel.TeacherName))
         {
-            selectclasses = selectclasses.Where(s => s.TeacherName.Contains(myModel.TeacherName));
-        } *@
-        @* classes = selectclasses.ToList(); *@
-        IEnumerable<IGrouping<string, newClass>> query = classes.GroupBy(x => x.Course.CourseId);
-        foreach (IGrouping<string, newClass> info in query)
+            selectclasses = selectclasses.Where(s => s.Teacher.Name.Contains(myModel.TeacherName));
+        } 
+        classes = selectclasses.ToList();
+        IEnumerable<IGrouping<string, Class>> query = classes.GroupBy(x => x.Course.CourseId);
+        foreach (IGrouping<string, Class> info in query)
         {
-            details = info.ToList<newClass>();
+            details = info.ToList<Class>();
             List<shownclass> showclasslist = new List<shownclass>();
-            foreach(newClass c in details)
+            foreach(Class c in details)
             {
-                if(c.StuIDList.Contains(user.Id))
+                if(c.Students!=null&&c.Students.Contains(user))
                     showclasslist.Add(new shownclass(c,"退课"));
                 else
                     showclasslist.Add(new shownclass(c,"选课"));
@@ -260,7 +272,7 @@
     async Task search()
     {
         courses.Clear();
-        var selectclasses = from m in DbContext.Classes
+        var selectclasses = from m in DbContext.Classes.Include("Classroom").Include("Course").Include("Teacher").Include("Students")
                 select m;
         if (!string.IsNullOrEmpty(myModel.CourseName))
         {
@@ -270,19 +282,19 @@
         {
             selectclasses = selectclasses.Where(s => s.Course.CourseId.Contains(myModel.CourseID));
         }
-        @* if (!string.IsNullOrEmpty(myModel.TeacherName))
+        if (!string.IsNullOrEmpty(myModel.TeacherName))
         {
-            selectclasses = selectclasses.Where(s => s.TeacherName.Contains(myModel.TeacherName));
-        } *@
-        @* classes = selectclasses.ToList(); *@
-        IEnumerable<IGrouping<string, newClass>> query = classes.GroupBy(x => x.Course.CourseId);
-        foreach (IGrouping<string, newClass> info in query)
+            selectclasses = selectclasses.Where(s => s.Teacher.Name.Contains(myModel.TeacherName));
+        }
+        classes = selectclasses.ToList(); 
+        IEnumerable<IGrouping<string, Class>> query = classes.GroupBy(x => x.Course.CourseId);
+        foreach (IGrouping<string, Class> info in query)
         {
-            details = info.ToList<newClass>();
+            details = info.ToList<Class>();
             List<shownclass> showclasslist = new List<shownclass>();
-            foreach(newClass c in details)
+            foreach(Class c in details)
             {
-                if(c.StuIDList.Contains(user.Id))
+                if(c.Students!=null&&c.Students.Contains(user))
                     showclasslist.Add(new shownclass(c,"退课"));
                 else
                     showclasslist.Add(new shownclass(c,"选课"));
@@ -290,11 +302,45 @@
             courses.Add(showclasslist); 
         }
     }
+
+    String indexToTimeStr(int index) {
+        String timeStr = "";
+        int day = index % 7;
+        int tid = index / 7;
+        
+        switch(day) {
+            case 0: timeStr += "周一 ";break;
+            case 1: timeStr += "周二 ";break;
+            case 2: timeStr += "周三 ";break;
+            case 3: timeStr += "周四 ";break;
+            case 4: timeStr += "周五 ";break;
+            case 5: timeStr += "周六 ";break;
+            case 6: timeStr += "周日 ";break;
+        }
+        switch(tid) {
+            case 0: timeStr += "08:00-08:45"; break;
+            case 1: timeStr += "08:50-09:35"; break;
+            case 2: timeStr += "09:50-10:35"; break;
+            case 3: timeStr += "10:40-11:25"; break;
+            case 4: timeStr += "11:30-12:15"; break;
+            case 5: timeStr += "13:15-14:00"; break;
+            case 6: timeStr += "14:05-14:50"; break;
+            case 7: timeStr += "14:55-15:40"; break;
+            case 8: timeStr += "15:55-16:40"; break;
+            case 9: timeStr += "16:45-17:30"; break;
+            case 10: timeStr += "18:30-19:15"; break;
+            case 11: timeStr += "19:20-20:05"; break;
+            case 12: timeStr += "20:10-20:55"; break;
+        }
+        return timeStr;
+    }
+
+
     public class shownclass
     {
-        public newClass showclass { get; set; }
+        public Class showclass { get; set; }
         public string state { get; set; }
-        public shownclass(newClass c, string s)
+        public shownclass(Class c, string s)
         {
             this.showclass=c;
             this.state=s;
