@@ -39,7 +39,7 @@
                             foreach(var course in courses){
                                 <MatExpansionPanel style="margin-top: 1%;">
                                 <MatExpansionPanelSummary>
-                                <MatExpansionPanelHeader>(@course[0].showclass.Course.CourseId) @course[0].showclass.Course.Name ——@course[0].showclass.Course.Credit 学分</MatExpansionPanelHeader>
+                                <MatExpansionPanelHeader>(@course[0].showclass.Course.CourseId) @course[0].showclass.Course.Name —— @(course[0].showclass.Course.TheoryHours+course[0].showclass.Course.PracticeHours/2.0) 学分</MatExpansionPanelHeader>
                                 </MatExpansionPanelSummary>
                                 <MatExpansionPanelDetails>
                                     <MatTable Items="@course" class="mat-elevation-z5" ShowPaging="false">
@@ -102,8 +102,8 @@
                                     <th>课程代码</th>
                                     <th>课程名称</th>
                                     <th>开课学院</th>
-                                    <th>实践学时</th>
                                     <th>理论学时</th>
+                                    <th>实践学时</th>          
                                     <th>学分</th>
                                     <th>状态</th>
                                 </MatTableHeader>
@@ -111,9 +111,9 @@
                                     <td style="width: 20%;">@context.CourseId</td>
                                     <td style="width: 30%;">@context.Name</td>
                                     <td style="width: 20%;">@context.Department</td>
-                                    <td style="width: 10%;">@context.PracticeHours</td>
                                     <td style="width: 10%;">@context.TheoryHours</td>
-                                    <td style="width: 10%;">@context.Credit</td>
+                                    <td style="width: 10%;">@context.PracticeHours</td>
+                                    <td style="width: 10%;">@(context.TheoryHours + context.PracticeHours/2.0)</td>
                                     <td><MatButton Raised="true">未修</MatButton></td>
                                 </MatTableRow>
                             </MatTable>
@@ -139,8 +139,8 @@
                                     <th>课程代码</th>
                                     <th>课程名称</th>
                                     <th>开课学院</th>
-                                    <th>实践学时</th>
                                     <th>理论学时</th>
+                                    <th>实践学时</th>  
                                     <th>学分</th>
                                     <th>状态</th>
                                 </MatTableHeader>
@@ -148,9 +148,9 @@
                                     <td style="width: 20%;">@context.CourseId</td>
                                     <td style="width: 30%;">@context.Name</td>
                                     <td style="width: 20%;">@context.Department</td>
-                                    <td style="width: 10%;">@context.PracticeHours</td>
                                     <td style="width: 10%;">@context.TheoryHours</td>
-                                    <td style="width: 10%;">@context.Credit</td>
+                                    <td style="width: 10%;">@context.PracticeHours</td>
+                                    <td style="width: 10%;">@(context.TheoryHours + context.PracticeHours/2.0)</td>
                                     <td><MatButton Raised="true">未修</MatButton></td>
                                 </MatTableRow>
                             </MatTable>
@@ -176,8 +176,8 @@
                                     <th>课程代码</th>
                                     <th>课程名称</th>
                                     <th>开课学院</th>
-                                    <th>实践学时</th>
                                     <th>理论学时</th>
+                                    <th>实践学时</th>  
                                     <th>学分</th>
                                     <th>状态</th>
                                 </MatTableHeader>
@@ -185,9 +185,9 @@
                                     <td style="width: 20%;">@context.CourseId</td>
                                     <td style="width: 30%;">@context.Name</td>
                                     <td style="width: 20%;">@context.Department</td>
-                                    <td style="width: 10%;">@context.PracticeHours</td>
                                     <td style="width: 10%;">@context.TheoryHours</td>
-                                    <td style="width: 10%;">@context.Credit</td>
+                                    <td style="width: 10%;">@context.PracticeHours</td>
+                                    <td style="width: 10%;">@(context.TheoryHours + context.PracticeHours/2.0)</td>
                                     <td><MatButton Raised="true">未修</MatButton></td>
                                 </MatTableRow>
                             </MatTable>
@@ -213,7 +213,7 @@
 {
     [Inject] IJSRuntime JS { get; set; }
     List<Class> classes;
-    List<Course> coursesList;
+    List<Course> coursesList = new List<Course>();
     List<List<shownclass>> courses = new List<List<shownclass>>();
     List<Class> details;
     SearchModel myModel = new SearchModel();
@@ -230,7 +230,13 @@
         }
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         user = await _userManager.GetUserAsync(authState.User);
-        coursesList = await DbContext.Courses.ToListAsync();
+        var sc = await DbContext.SpecialityCourse.Include(i => i.Course).ToListAsync();
+        foreach(SpecialityCourse c in sc)
+        {
+            Course s = c.Course;
+            coursesList.Add(s);
+        }
+        @* coursesList = await DbContext.Courses.ToListAsync(); *@
         csTemplate.setCourse(coursesList,coursesList,coursesList);
         await UpdateList();
     }
