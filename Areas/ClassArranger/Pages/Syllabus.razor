@@ -1,0 +1,118 @@
+@page "/ClassArranger/Syllabus"
+@using Microsoft.AspNetCore.Components
+
+@attribute [Authorize(Roles = "Teacher")]
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<User> _userManager
+
+@* 教室课程表查看页面 *@
+
+@inject IJSRuntime JsRuntime
+
+<MatButton style="float: right" @onclick="print">打印课程表</MatButton>
+
+<span id="toPrint">
+    <h2>课程表</h2>
+
+    <div class="mat-layout-grid">
+        <div class="mat-layout-grid-inner">
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+                @if (hasArranged) {
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">时间</th>
+                                <th scope="col">星期一</th>
+                                <th scope="col">星期二</th>
+                                <th scope="col">星期三</th>
+                                <th scope="col">星期四</th>
+                                <th scope="col">星期五</th>
+                                <th scope="col">星期六</th>
+                                <th scope="col">星期日</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (classes != null) {
+                                @for(int i = 0; i < 13; i++) {
+                                    <tr>
+                                        <td>@i</td>
+                                        @for(int j = 0; j < 7; j++) {
+                                            bool flag = false;
+                                            @foreach(var _class in classes) {
+                                                if ((_class.TeachTime[j] & mask[i]) != 0) {
+                                                    flag = true;
+                                                    <td>@_class.Course</td>
+                                                    break;
+                                                }
+                                            }
+                                            if (flag == false) {
+                                                <td></td>
+                                            }
+                                        }
+                                    </tr>
+                                }
+                            } else {
+                                @for (int i = 0; i < 13; i++) {
+                                    <tr>
+                                        <td>@i</td>
+                                        @for (int j = 0; j < 7; j++) {
+                                            <td></td>
+                                        }
+                                    </tr>
+                                }
+                            }
+
+                        </tbody>
+                    </table>
+                } else {
+                    <p>还未开始排课</p>
+                }
+            </div>
+        </div>
+    </div>
+</span>
+
+
+
+
+@code {
+    User user;
+    bool hasArranged = true;
+
+    List<Class> classes;
+    int [] mask = new int []{
+        Convert.ToInt32("1000000000000", 2),    // 第 1节课
+        Convert.ToInt32("0100000000000", 2),    // 第 2节课
+        Convert.ToInt32("0010000000000", 2),    // 第 3节课
+        Convert.ToInt32("0001000000000", 2),    // 第 4节课
+        Convert.ToInt32("0000100000000", 2),    // 第 5节课
+        Convert.ToInt32("0000010000000", 2),    // 第 6节课
+        Convert.ToInt32("0000001000000", 2),    // 第 7节课
+        Convert.ToInt32("0000000100000", 2),    // 第 8节课
+        Convert.ToInt32("0000000010000", 2),    // 第 9节课
+        Convert.ToInt32("0000000001000", 2),    // 第10节课
+        Convert.ToInt32("0000000000100", 2),    // 第11节课
+        Convert.ToInt32("0000000000010", 2),    // 第12节课
+        Convert.ToInt32("0000000000001", 2),    // 第13节课
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = await _userManager.GetUserAsync(authState.User);
+        Console.WriteLine("Get User id:" + user.Id + " user name:" + user.UserName);
+        // 找到老师所有的教学班
+        classes = DbContext.Classes.Include("Course").Where(c => c.Teacher == user).ToList();
+        Console.WriteLine(classes.Count());
+        foreach(var _class in classes) {
+            if (_class.TeachTime == null) {
+                hasArranged = false;
+            }
+        }
+    }
+
+    private async Task print(MouseEventArgs e) {
+        await JsRuntime.InvokeAsync<string>("printSyllabus");
+    }
+}

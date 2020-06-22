@@ -11,8 +11,8 @@ using TeachingSystem.Data;
 namespace TeachingSystem.Migrations
 {
     [DbContext(typeof(TSSDbContext))]
-    [Migration("20200615065209_newClass")]
-    partial class newClass
+    [Migration("20200621161608_NewStage")]
+    partial class NewStage
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -50,29 +50,29 @@ namespace TeachingSystem.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "76cf9b9a-9b15-44e8-8a9f-d556262623ab",
-                            ConcurrencyStamp = "1e4e205a-c334-4606-8c9e-4d16c4de8c02",
+                            Id = "4c1466bf-3620-4b08-a0a2-974ca66c9d1a",
+                            ConcurrencyStamp = "4f3a6bc5-d511-4f59-8c17-d1a37102d550",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "d55c0c4a-4fb2-47ed-ac1e-034966eef966",
-                            ConcurrencyStamp = "4af0fa6e-6172-4870-99c8-3ebbe2bdd194",
+                            Id = "19f04d4e-4a8c-42b1-b1df-a781c08833a2",
+                            ConcurrencyStamp = "26d9f430-62f5-4193-ad23-d17fd5f68504",
                             Name = "Teacher",
                             NormalizedName = "TEACHER"
                         },
                         new
                         {
-                            Id = "07eb93d9-4301-4511-8f4c-db7690b12f66",
-                            ConcurrencyStamp = "0909f8a1-39a9-466e-8790-1f3ccaae4e65",
+                            Id = "bb316b3c-e9a4-4d67-a1ac-b58082059d5e",
+                            ConcurrencyStamp = "06fcc5c1-fad1-4a94-848b-776bb7098400",
                             Name = "Student",
                             NormalizedName = "STUDENT"
                         },
                         new
                         {
-                            Id = "4aeb340b-a5a7-447c-a73f-fe4e176b71f0",
-                            ConcurrencyStamp = "7bdcc98e-7dbe-43de-8bca-8cb7ff8fcfd9",
+                            Id = "1a026109-eda9-4823-be66-fb75ff2f6de0",
+                            ConcurrencyStamp = "c7b7f1f6-884d-4250-a4b2-085fb67abdc4",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         });
@@ -191,16 +191,27 @@ namespace TeachingSystem.Migrations
                     b.Property<string>("ClassId")
                         .HasColumnType("text");
 
+                    b.Property<int?>("ClassroomId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("CourseId")
                         .HasColumnType("text");
 
+                    b.Property<List<int>>("TeachTime")
+                        .HasColumnType("integer[]");
+
                     b.Property<string>("TeacherId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TestTime")
                         .HasColumnType("text");
 
                     b.Property<long?>("UserClassesId")
                         .HasColumnType("bigint");
 
                     b.HasKey("ClassId");
+
+                    b.HasIndex("ClassroomId");
 
                     b.HasIndex("CourseId");
 
@@ -233,6 +244,33 @@ namespace TeachingSystem.Migrations
                     b.ToTable("ClassChoices");
                 });
 
+            modelBuilder.Entity("TeachingSystem.Data.Classroom", b =>
+                {
+                    b.Property<int>("ClassroomId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("Building")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Campus")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ClassroomName")
+                        .HasColumnType("text");
+
+                    b.Property<int>("RoomNumber")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ClassroomId");
+
+                    b.ToTable("Classroom");
+                });
+
             modelBuilder.Entity("TeachingSystem.Data.Course", b =>
                 {
                     b.Property<string>("CourseId")
@@ -257,22 +295,6 @@ namespace TeachingSystem.Migrations
                     b.HasKey("CourseId");
 
                     b.ToTable("Courses");
-                });
-
-            modelBuilder.Entity("TeachingSystem.Data.CourseBy_Selection", b =>
-                {
-                    b.Property<string>("CourseBy_SelectionId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ClassId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.HasKey("CourseBy_SelectionId");
-
-                    b.ToTable("CourseBy_Selection");
                 });
 
             modelBuilder.Entity("TeachingSystem.Data.Post", b =>
@@ -551,6 +573,10 @@ namespace TeachingSystem.Migrations
 
             modelBuilder.Entity("TeachingSystem.Data.Class", b =>
                 {
+                    b.HasOne("TeachingSystem.Data.Classroom", "Classroom")
+                        .WithMany()
+                        .HasForeignKey("ClassroomId");
+
                     b.HasOne("TeachingSystem.Data.Course", "Course")
                         .WithMany()
                         .HasForeignKey("CourseId");

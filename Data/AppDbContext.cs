@@ -27,6 +27,7 @@ namespace TeachingSystem.Data
         public DbSet<TestResult> TestResults { get; set; }
         public DbSet<SpecialityCourse> SpecialityCourse { get; set; }
         public DbSet<newClass> newClass { get; set; }
+        public DbSet<Classroom> Classrooms { get; set; }
         public TSSDbContext(DbContextOptions<TSSDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder builder)

@@ -1,0 +1,18 @@
+@page "/ClassArranger/Manage/Class/Create"
+
+@using TeachingSystem.Areas.ClassArranger.Shared
+<div class="mat-layout-grid">
+    <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+            <h2>创建一个教学班</h2>
+            <ClassInfo create="true" OnSave="OnSave"></ClassInfo>
+        </div>
+    </div>
+</div>
+ 
+
+@code {
+    void OnSave() {
+        NavigationManager.NavigateTo("/ClassArranger/Manage/Class");
+    }
+}

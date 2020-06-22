@@ -1,0 +1,109 @@
+@page "/ClassArranger/Manage/ClassRoom"
+@using Microsoft.AspNetCore.Components
+
+<h2>教室信息管理</h2>
+<div class="mat-layout-grid">
+    <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
+            <MatButton Icon="add" Link="/ClassArranger/Manage/ClassRoom/Create">添加教室</MatButton>
+        </div>
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-8">
+            <MatPaginator Length="@size" PageSize="@pageSize" Page="OnPage"></MatPaginator>
+        </div>
+    </div>
+</div>
+
+ <table class="table">
+    <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">教室名</th>
+            <th scope="col">校区</th>
+            <th scope="col">建筑</th>
+            <th scope="col">房间号</th>
+            <th scope="col">容量</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if(classrooms != null){
+            foreach(var classRoom in classrooms){
+                <tr>
+                    <td>@classRoom.ClassroomId</td>
+                    <td>@classRoom.ClassroomName</td>
+                    <td>@classRoom.Campus</td>
+                    <td>@classRoom.Building</td>
+                    <td>@classRoom.RoomNumber</td>
+                    <td>@classRoom.Capacity</td>
+                    <td><a href="/ClassArranger/Manage/ClassRoom/Edit/@classRoom.ClassroomId">编辑</a>|<button type="button" class="btn btn-link" @onclick="@(_ => {classRoomToDelete=classRoom;dialogIsOpen=true;})">删除</button></td>
+                </tr>
+            }
+        } else {
+            <div class="spinner-border" role="status">
+                <span class="sr-only">加载中……</span>
+            </div>
+        }
+    </tbody>
+</table>
+    <MatDialog @bind-IsOpen="@dialogIsOpen">
+        <MatDialogTitle>删除教室</MatDialogTitle>
+        <MatDialogContent>
+            <p>真的要删除 @classRoomToDelete?.ClassroomName 吗？这个操作无法恢复</p>
+        </MatDialogContent>
+        <MatDialogActions>
+            <MatButton OnClick="@(e => { dialogIsOpen = false; })">否</MatButton>
+            <MatButton OnClick="@DeleteClassRoom">删除</MatButton>
+        </MatDialogActions>
+    </MatDialog>
+
+@code {
+    int page = 0;
+    int pageSize = 25;
+    int size = 0;
+    bool dialogIsOpen = false;
+    IEnumerable<Classroom> classrooms;
+    Classroom classRoomToDelete = null;
+    async Task OnPage(MatPaginatorPageEvent e)
+    {
+        pageSize = e.PageSize;
+        page = e.PageIndex;
+        await UpdateList();
+        StateHasChanged();
+    }
+    async Task DeleteClassRoom() {
+        DbContext.Classrooms.Remove(classRoomToDelete);
+        DbContext.SaveChanges();
+        await UpdateList();
+        dialogIsOpen = false;
+    }
+    async Task UpdateList()
+    {
+        classrooms = await DbContext.Classrooms.Skip(page * pageSize).Take(pageSize).ToListAsync();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        size = await DbContext.Classrooms.CountAsync();
+
+        string [] buildingName = new string[]{"西1", "西2", "西3", "东1", "东2", "东3"};
+        Random rd = new Random();
+
+        // 随机生成教室数据
+        if (size == 0 && false) {
+            for (int i = 0; i < 10; i++) {
+                int buildingId = rd.Next(0, 6);
+                int roomId = rd.Next(100, 130);
+
+                var _classroom = new TeachingSystem.Data.Classroom{
+                                    Campus="紫荆港", 
+                                    Building=buildingName[buildingId],
+                                    RoomNumber=roomId,
+                                    ClassroomName="test"+i.ToString(),
+                                    Capacity=100};
+                DbContext.Classrooms.Add(_classroom);
+            }
+            DbContext.SaveChanges();     
+        }
+
+        await UpdateList();
+    }
+}
