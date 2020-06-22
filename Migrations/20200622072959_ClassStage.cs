@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace TeachingSystem.Migrations
 {
-    public partial class NewStage : Migration
+    public partial class ClassStage : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -44,7 +44,7 @@ namespace TeachingSystem.Migrations
                 nullable: true);
 
             migrationBuilder.CreateTable(
-                name: "Classroom",
+                name: "Classrooms",
                 columns: table => new
                 {
                     ClassroomId = table.Column<int>(nullable: false)
@@ -57,28 +57,7 @@ namespace TeachingSystem.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Classroom", x => x.ClassroomId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "newClass",
-                columns: table => new
-                {
-                    newClassId = table.Column<string>(nullable: false),
-                    CourseId = table.Column<string>(nullable: true),
-                    TeacherID = table.Column<string>(nullable: true),
-                    TeacherName = table.Column<string>(nullable: true),
-                    StuIDList = table.Column<List<string>>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_newClass", x => x.newClassId);
-                    table.ForeignKey(
-                        name: "FK_newClass_Courses_CourseId",
-                        column: x => x.CourseId,
-                        principalTable: "Courses",
-                        principalColumn: "CourseId",
-                        onDelete: ReferentialAction.Restrict);
+                    table.PrimaryKey("PK_Classrooms", x => x.ClassroomId);
                 });
 
             migrationBuilder.CreateTable(
@@ -106,10 +85,10 @@ namespace TeachingSystem.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "4c1466bf-3620-4b08-a0a2-974ca66c9d1a", "4f3a6bc5-d511-4f59-8c17-d1a37102d550", "Admin", "ADMIN" },
-                    { "19f04d4e-4a8c-42b1-b1df-a781c08833a2", "26d9f430-62f5-4193-ad23-d17fd5f68504", "Teacher", "TEACHER" },
-                    { "bb316b3c-e9a4-4d67-a1ac-b58082059d5e", "06fcc5c1-fad1-4a94-848b-776bb7098400", "Student", "STUDENT" },
-                    { "1a026109-eda9-4823-be66-fb75ff2f6de0", "c7b7f1f6-884d-4250-a4b2-085fb67abdc4", "Manager", "MANAGER" }
+                    { "9eb36fb2-2887-453c-85b1-e707bb6ce3ba", "b2078dd8-407a-41f2-8f20-e5449f1d81c9", "Admin", "ADMIN" },
+                    { "11941600-f785-4307-ac9d-a50dc5ced85b", "3d84b86a-33df-41f6-b24b-5e288dfd6d04", "Teacher", "TEACHER" },
+                    { "f164fbaf-c497-49e4-b935-d981e27b62a5", "c1573430-6534-4089-acae-1c4a3d29cbdc", "Student", "STUDENT" },
+                    { "f94dcf50-bcf2-4d25-9870-dd8faa68efc5", "191c3461-779e-4034-890f-f68097626640", "Manager", "MANAGER" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -118,20 +97,15 @@ namespace TeachingSystem.Migrations
                 column: "ClassroomId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_newClass_CourseId",
-                table: "newClass",
-                column: "CourseId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_SpecialityCourse_CourseId",
                 table: "SpecialityCourse",
                 column: "CourseId");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Classes_Classroom_ClassroomId",
+                name: "FK_Classes_Classrooms_ClassroomId",
                 table: "Classes",
                 column: "ClassroomId",
-                principalTable: "Classroom",
+                principalTable: "Classrooms",
                 principalColumn: "ClassroomId",
                 onDelete: ReferentialAction.Restrict);
         }
@@ -139,14 +113,11 @@ namespace TeachingSystem.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Classes_Classroom_ClassroomId",
+                name: "FK_Classes_Classrooms_ClassroomId",
                 table: "Classes");
 
             migrationBuilder.DropTable(
-                name: "Classroom");
-
-            migrationBuilder.DropTable(
-                name: "newClass");
+                name: "Classrooms");
 
             migrationBuilder.DropTable(
                 name: "SpecialityCourse");
@@ -158,22 +129,22 @@ namespace TeachingSystem.Migrations
             migrationBuilder.DeleteData(
                 table: "AspNetRoles",
                 keyColumn: "Id",
-                keyValue: "19f04d4e-4a8c-42b1-b1df-a781c08833a2");
+                keyValue: "11941600-f785-4307-ac9d-a50dc5ced85b");
 
             migrationBuilder.DeleteData(
                 table: "AspNetRoles",
                 keyColumn: "Id",
-                keyValue: "1a026109-eda9-4823-be66-fb75ff2f6de0");
+                keyValue: "9eb36fb2-2887-453c-85b1-e707bb6ce3ba");
 
             migrationBuilder.DeleteData(
                 table: "AspNetRoles",
                 keyColumn: "Id",
-                keyValue: "4c1466bf-3620-4b08-a0a2-974ca66c9d1a");
+                keyValue: "f164fbaf-c497-49e4-b935-d981e27b62a5");
 
             migrationBuilder.DeleteData(
                 table: "AspNetRoles",
                 keyColumn: "Id",
-                keyValue: "bb316b3c-e9a4-4d67-a1ac-b58082059d5e");
+                keyValue: "f94dcf50-bcf2-4d25-9870-dd8faa68efc5");
 
             migrationBuilder.DropColumn(
                 name: "ClassroomId",

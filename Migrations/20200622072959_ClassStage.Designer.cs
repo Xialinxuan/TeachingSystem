@@ -11,8 +11,8 @@ using TeachingSystem.Data;
 namespace TeachingSystem.Migrations
 {
     [DbContext(typeof(TSSDbContext))]
-    [Migration("20200621161608_NewStage")]
-    partial class NewStage
+    [Migration("20200622072959_ClassStage")]
+    partial class ClassStage
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -50,29 +50,29 @@ namespace TeachingSystem.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "4c1466bf-3620-4b08-a0a2-974ca66c9d1a",
-                            ConcurrencyStamp = "4f3a6bc5-d511-4f59-8c17-d1a37102d550",
+                            Id = "9eb36fb2-2887-453c-85b1-e707bb6ce3ba",
+                            ConcurrencyStamp = "b2078dd8-407a-41f2-8f20-e5449f1d81c9",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "19f04d4e-4a8c-42b1-b1df-a781c08833a2",
-                            ConcurrencyStamp = "26d9f430-62f5-4193-ad23-d17fd5f68504",
+                            Id = "11941600-f785-4307-ac9d-a50dc5ced85b",
+                            ConcurrencyStamp = "3d84b86a-33df-41f6-b24b-5e288dfd6d04",
                             Name = "Teacher",
                             NormalizedName = "TEACHER"
                         },
                         new
                         {
-                            Id = "bb316b3c-e9a4-4d67-a1ac-b58082059d5e",
-                            ConcurrencyStamp = "06fcc5c1-fad1-4a94-848b-776bb7098400",
+                            Id = "f164fbaf-c497-49e4-b935-d981e27b62a5",
+                            ConcurrencyStamp = "c1573430-6534-4089-acae-1c4a3d29cbdc",
                             Name = "Student",
                             NormalizedName = "STUDENT"
                         },
                         new
                         {
-                            Id = "1a026109-eda9-4823-be66-fb75ff2f6de0",
-                            ConcurrencyStamp = "c7b7f1f6-884d-4250-a4b2-085fb67abdc4",
+                            Id = "f94dcf50-bcf2-4d25-9870-dd8faa68efc5",
+                            ConcurrencyStamp = "191c3461-779e-4034-890f-f68097626640",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         });
@@ -268,7 +268,7 @@ namespace TeachingSystem.Migrations
 
                     b.HasKey("ClassroomId");
 
-                    b.ToTable("Classroom");
+                    b.ToTable("Classrooms");
                 });
 
             modelBuilder.Entity("TeachingSystem.Data.Course", b =>
@@ -496,30 +496,6 @@ namespace TeachingSystem.Migrations
                     b.ToTable("UserClasses");
                 });
 
-            modelBuilder.Entity("TeachingSystem.Data.newClass", b =>
-                {
-                    b.Property<string>("newClassId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CourseId")
-                        .HasColumnType("text");
-
-                    b.Property<List<string>>("StuIDList")
-                        .HasColumnType("text[]");
-
-                    b.Property<string>("TeacherID")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TeacherName")
-                        .HasColumnType("text");
-
-                    b.HasKey("newClassId");
-
-                    b.HasIndex("CourseId");
-
-                    b.ToTable("newClass");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -660,13 +636,6 @@ namespace TeachingSystem.Migrations
                     b.HasOne("TeachingSystem.Data.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
-                });
-
-            modelBuilder.Entity("TeachingSystem.Data.newClass", b =>
-                {
-                    b.HasOne("TeachingSystem.Data.Course", "Course")
-                        .WithMany()
-                        .HasForeignKey("CourseId");
                 });
 #pragma warning restore 612, 618
         }

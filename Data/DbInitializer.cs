@@ -69,15 +69,15 @@ namespace TeachingSystem.Data
             };
             context.SpecialityCourse.AddRange(SpecialityCourse);
             context.SaveChanges();*/
-            var newClass = new newClass[]
-            {
-                new newClass{newClassId = "4",CourseId="1",TeacherID="5",TeacherName="giao5",StuIDList=new List<string>(){"7754b690-d20a-4a56-85a5-df7fb2880f68","2"}},
-                new newClass{newClassId = "5",CourseId="2",TeacherID="6",TeacherName="giao6",StuIDList=new List<string>(){"1","2"}},
-                new newClass{newClassId = "6",CourseId="3",TeacherID="7",TeacherName="giao7",StuIDList=new List<string>(){"7754b690-d20a-4a56-85a5-df7fb2880f68","4"}},
-                new newClass{newClassId = "7",CourseId="3",TeacherID="7",TeacherName="giao7",StuIDList=new List<string>(){"1","2"}},
-            };
-            context.newClass.AddRange(newClass);
-            context.SaveChanges();
+            // var newClass = new newClass[]
+            // {
+            //     new newClass{newClassId = "4",CourseId="1",TeacherID="5",TeacherName="giao5",StuIDList=new List<string>(){"7754b690-d20a-4a56-85a5-df7fb2880f68","2"}},
+            //     new newClass{newClassId = "5",CourseId="2",TeacherID="6",TeacherName="giao6",StuIDList=new List<string>(){"1","2"}},
+            //     new newClass{newClassId = "6",CourseId="3",TeacherID="7",TeacherName="giao7",StuIDList=new List<string>(){"7754b690-d20a-4a56-85a5-df7fb2880f68","4"}},
+            //     new newClass{newClassId = "7",CourseId="3",TeacherID="7",TeacherName="giao7",StuIDList=new List<string>(){"1","2"}},
+            // };
+            // context.newClass.AddRange(newClass);
+            // context.SaveChanges();
         }
     }
 }

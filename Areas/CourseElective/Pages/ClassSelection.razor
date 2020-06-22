@@ -226,7 +226,7 @@
     async Task UpdateList()
     {
         courses.Clear();
-        var selectclasses = from m in DbContext.newClass
+        var selectclasses = from m in DbContext.Classes
                 select m;
         if (!string.IsNullOrEmpty(myModel.CourseName))
         {
@@ -236,11 +236,11 @@
         {
             selectclasses = selectclasses.Where(s => s.Course.CourseId.Contains(myModel.CourseID));
         }
-        if (!string.IsNullOrEmpty(myModel.TeacherName))
+        @* if (!string.IsNullOrEmpty(myModel.TeacherName))
         {
             selectclasses = selectclasses.Where(s => s.TeacherName.Contains(myModel.TeacherName));
-        }
-        classes = selectclasses.ToList();
+        } *@
+        @* classes = selectclasses.ToList(); *@
         IEnumerable<IGrouping<string, newClass>> query = classes.GroupBy(x => x.Course.CourseId);
         foreach (IGrouping<string, newClass> info in query)
         {
@@ -260,7 +260,7 @@
     async Task search()
     {
         courses.Clear();
-        var selectclasses = from m in DbContext.newClass
+        var selectclasses = from m in DbContext.Classes
                 select m;
         if (!string.IsNullOrEmpty(myModel.CourseName))
         {
@@ -270,11 +270,11 @@
         {
             selectclasses = selectclasses.Where(s => s.Course.CourseId.Contains(myModel.CourseID));
         }
-        if (!string.IsNullOrEmpty(myModel.TeacherName))
+        @* if (!string.IsNullOrEmpty(myModel.TeacherName))
         {
             selectclasses = selectclasses.Where(s => s.TeacherName.Contains(myModel.TeacherName));
-        }
-        classes = selectclasses.ToList();
+        } *@
+        @* classes = selectclasses.ToList(); *@
         IEnumerable<IGrouping<string, newClass>> query = classes.GroupBy(x => x.Course.CourseId);
         foreach (IGrouping<string, newClass> info in query)
         {
