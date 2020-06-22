@@ -18,14 +18,6 @@
             <MatTextField Label="课程号" @bind-Value="SpecialityCourse.CourseId" FullWidth="true" />
         </p>
 
-        <p>
-            <MatTextField Label="用户ID" @bind-Value="SpecialityCourse.UserID" FullWidth="true"/>
-        </p>
-
-        <p>
-            <MatTextField  Label="用户名" @bind-Value="SpecialityCourse.UserName" FullWidth="true"/>
-        </p>
-        
         <p style="text-align: center">
             <MatButton Type="submit" Raised="true">保存</MatButton>
         </p>
@@ -80,8 +72,6 @@
         } else {
             SpecialityCourse = await  DbContext.SpecialityCourse.SingleAsync(c => c.SpecialityCourseID == id);
         }
-        SpecialityCourse.UserID = user.Id;
-        SpecialityCourse.UserName = user.Name;
     }
    
 }

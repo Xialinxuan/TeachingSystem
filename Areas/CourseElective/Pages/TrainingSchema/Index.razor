@@ -23,10 +23,11 @@
        
         <thead>
             <tr>
+                <th scope="col">培养方案课程号</th>
                 <th scope="col">课程号</th>
                 <th scope="col">课程名称</th>
-                <th scope="col">用户ID</th>
-                <th scope="col">用户名</th>
+                <th scope="col">开课院系</th>
+                <th scope="col">学分</th>
                 
                 <th scope="col"></th>
             </tr>
@@ -35,10 +36,11 @@
             @if(specialityCourse != null){
                   foreach(var SC in specialityCourse){
                     <tr>
+                        <td>@SC.SpecialityCourseID</td>
                         <td>@SC.CourseId</td>
                         <td>@SC.Course.Name</td>
-                        <td>@SC.UserID</td>
-                        <td>@SC.UserName</td>
+                        <td>@SC.Course.Department</td>
+                        <td>@(SC.Course.TheoryHours + SC.Course.PracticeHours/2.0)</td>
                         <td><a href="/BasicInfo/Manage/Account/Edit/@SC.SpecialityCourseID">编辑</a>|<button type="button" class="btn btn-link" @onclick="@(_ => {_SpecialityCourseToDelete=SC;dialogIsOpen=true;})">删除</button></td>
                     </tr>
                   
@@ -54,7 +56,7 @@
     <MatDialog @bind-IsOpen="@dialogIsOpen">
         <MatDialogTitle>删除课程</MatDialogTitle>
         <MatDialogContent>
-            <p>真的要删除 @_SpecialityCourseToDelete?.CourseId @_SpecialityCourseToDelete?.Course.Name @_SpecialityCourseToDelete?.UserName 吗？这个操作无法恢复</p>
+            <p>真的要删除 @_SpecialityCourseToDelete?.SpecialityCourseID @_SpecialityCourseToDelete?.Course.CourseId @_SpecialityCourseToDelete?.Course.Name 吗？这个操作无法恢复</p>
         </MatDialogContent>
         <MatDialogActions>
             <MatButton OnClick="@(e => { dialogIsOpen = false; })">否</MatButton>

@@ -16,9 +16,7 @@ namespace TeachingSystem.Data
         //对应的课程号
         public string CourseId { get; set; }
         //用户ID 代替学生ID
-        public string UserID { get; set; }
-        //用户名
-        public string UserName { get; set; }
+
         //导航属性 到Course
         public Course Course { get; set; }
     }
