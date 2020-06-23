@@ -216,14 +216,15 @@
     List<Course> BcoursesList = new List<Course>();
     List<Course> XcoursesList = new List<Course>();
     List<Course> GcoursesList = new List<Course>();
-    double Bneedcredits = 0;
+
     List<List<shownclass>> courses = new List<List<shownclass>>();
     List<Class> details;
     SearchModel myModel = new SearchModel();
     Template csTemplate = new Template();
     UserClasses myClasses = new UserClasses();
     User user;
-    List<UserClasses> userclasseslist;
+    List<string> userClassesIdlist;
+    List<string> userCourseIdlist = new List<string>();
     protected override async Task OnInitializedAsync()
     {
         TSSDbContext.MyGlobals.PresentConnection++;
@@ -234,26 +235,11 @@
         }
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         user = await _userManager.GetUserAsync(authState.User);
-        var userclasses = from m in DbContext.UserClasses.Include("Classes").Include("User")
+        @* var userclasses = from m in DbContext.UserClasses.Include("Classes").Include("User")
                 select m ;
         userclasses = userclasses.Where(m => m.User.Id == user.Id);
-        userclasseslist = userclasses.ToList();
-        var sc = await DbContext.SpecialityCourse.Include(i => i.Course).ToListAsync();
-        foreach(SpecialityCourse c in sc)
-        {
-            Course s = c.Course;
-            if(s.CourseId.Contains("B")){
-                BcoursesList.Add(s);
-                Bneedcredits += s.TheoryHours + s.PracticeHours/2.0;
-            }else if(s.CourseId.Contains("X")){
-                XcoursesList.Add(s);
-            }else if(s.CourseId.Contains("G")){
-                GcoursesList.Add(s);
-            }
-           
-        }
-        @* coursesList = await DbContext.Courses.ToListAsync(); *@
-        csTemplate.setCourse(BcoursesList,XcoursesList,GcoursesList,Bneedcredits);
+        userclasseslist = userclasses.ToList(); *@
+        
         var mc = await DbContext.UserClasses.Include("User").Where(i => i.User.Id == user.Id).ToListAsync();
         if(mc.Count==0){
             UserClasses nc = new UserClasses{ClassesId=new List<string>(),User=user};
@@ -264,12 +250,55 @@
         else{
             myClasses = mc[0];
         }
+        
+
+
         await UpdateList();
     }
 
     async Task UpdateList()
     {
         courses.Clear();
+        userCourseIdlist.Clear();
+        userClassesIdlist = myClasses.ClassesId;
+        for( int i = 0;i<userClassesIdlist.Count;i++ ){
+            var p = userClassesIdlist[i];
+            var userCourse = await DbContext.Classes.Include("Course").Where(i => i.ClassId == p ).ToListAsync();
+            userCourseIdlist.Add(userCourse[0].Course.CourseId);
+        }
+        BcoursesList.Clear();
+        XcoursesList.Clear();
+        GcoursesList.Clear();
+        double Bneedcredits = 0;
+        double Bcurrentcredits = 0;
+        double Xcurrentcredits = 0;
+        double Gcurrentcredits = 0;
+        
+        var sc = await DbContext.SpecialityCourse.Include(i => i.Course).ToListAsync();
+        foreach(SpecialityCourse c in sc)
+        {
+            Course s = c.Course;
+            if(s.CourseId.Contains("B")){
+                BcoursesList.Add(s);
+                Bneedcredits += s.TheoryHours + s.PracticeHours/2.0;
+                if( userCourseIdlist.Contains(s.CourseId) ){
+                    Bcurrentcredits +=  s.TheoryHours + s.PracticeHours/2.0;;
+                }
+            }else if(s.CourseId.Contains("X")){
+                XcoursesList.Add(s);
+                 if( userCourseIdlist.Contains(s.CourseId) ){
+                    Xcurrentcredits +=  s.TheoryHours + s.PracticeHours/2.0;;
+                }
+            }else if(s.CourseId.Contains("G")){
+                GcoursesList.Add(s);
+                 if( userCourseIdlist.Contains(s.CourseId) ){
+                    Gcurrentcredits +=  s.TheoryHours + s.PracticeHours/2.0;;
+                }
+            }
+           
+        }
+        csTemplate.setCourse(BcoursesList,XcoursesList,GcoursesList,Bneedcredits,Bcurrentcredits,Xcurrentcredits,Gcurrentcredits);
+
         var selectclasses = from m in DbContext.Classes.Include("Classroom").Include("Course").Include("Teacher")
                 select m;
         if (!string.IsNullOrEmpty(myModel.CourseName))
@@ -404,11 +433,11 @@
         public List<double> currentcredits= new List<double>();
         public List<List<Course>> Courselists = new List<List<Course>>();
         
-        public void setCourse(List<Course> c0, List<Course> c1, List<Course> c2, double Bneedcredits)
+        public void setCourse(List<Course> c0, List<Course> c1, List<Course> c2, double Bneedcredits,double Bcurrentcredits,double Xcurrentcredits,double Gcurrentcredits)
         {
             needcredits.Clear();currentcredits.Clear();Courselists.Clear();
             needcredits.Add(Bneedcredits);needcredits.Add(30);needcredits.Add(10);
-            currentcredits.Add(0);currentcredits.Add(0);currentcredits.Add(0);
+            currentcredits.Add(Bcurrentcredits);currentcredits.Add(Xcurrentcredits);currentcredits.Add(Gcurrentcredits);
             this.Courselists.Add(c0);
             this.Courselists.Add(c1);
             this.Courselists.Add(c2);
