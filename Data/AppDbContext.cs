@@ -41,7 +41,9 @@ namespace TeachingSystem.Data
                 new IdentityRole { Name = "Teacher", NormalizedName = "TEACHER" },
                 new IdentityRole { Name = "Student", NormalizedName = "STUDENT" },
                 new IdentityRole { Name = "Manager", NormalizedName = "MANAGER" });
+
             builder.Entity<UserClasses>().Property(e => e.UserClassesId).ValueGeneratedOnAdd();
+            builder.Entity<Apply>().Property(e =>e.ApplyId).ValueGeneratedOnAdd();
         }
     }
 }

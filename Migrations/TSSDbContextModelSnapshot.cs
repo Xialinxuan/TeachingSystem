@@ -48,29 +48,29 @@ namespace TeachingSystem.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "01907824-fce4-46b5-99e1-a2bb5c967905",
-                            ConcurrencyStamp = "90cf20c2-0556-4ca4-9f3d-d0e4984815df",
+                            Id = "911321ca-a3f4-4b3d-b9c9-878caa60111c",
+                            ConcurrencyStamp = "1b24559d-1372-4f1a-98b3-86097a8a4924",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "1f77af71-f72c-4dc9-9b13-b38db219183a",
-                            ConcurrencyStamp = "dda333e7-7fd5-4723-ad4a-f49a78a46931",
+                            Id = "48ea317a-ab90-4d08-a861-05698fe45983",
+                            ConcurrencyStamp = "b60ce8b0-9651-4b97-94b5-db19b51aecb5",
                             Name = "Teacher",
                             NormalizedName = "TEACHER"
                         },
                         new
                         {
-                            Id = "784b6b7b-84e0-4497-89ce-6b8ca7772901",
-                            ConcurrencyStamp = "57648568-3e3b-4d6c-996c-b37522ffd289",
+                            Id = "5fbdf153-a83d-42ff-97f8-78868d0531a4",
+                            ConcurrencyStamp = "f07267d0-7aaf-497c-a995-255eac5032f0",
                             Name = "Student",
                             NormalizedName = "STUDENT"
                         },
                         new
                         {
-                            Id = "a7033eeb-e0bd-4aa6-9a0b-5b33f304cc34",
-                            ConcurrencyStamp = "e863109c-e4f3-49bc-84c4-26ab30ad0f8d",
+                            Id = "5df56d68-cc08-44c0-a935-95ad77382eb5",
+                            ConcurrencyStamp = "50dcee90-9435-4b70-b7be-c3b96fe55ad3",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         });
@@ -234,9 +234,6 @@ namespace TeachingSystem.Migrations
                     b.Property<string>("TestTime")
                         .HasColumnType("text");
 
-                    b.Property<long?>("UserClassesId")
-                        .HasColumnType("bigint");
-
                     b.HasKey("ClassId");
 
                     b.HasIndex("ClassroomId");
@@ -244,8 +241,6 @@ namespace TeachingSystem.Migrations
                     b.HasIndex("CourseId");
 
                     b.HasIndex("TeacherId");
-
-                    b.HasIndex("UserClassesId");
 
                     b.ToTable("Classes");
                 });
@@ -503,6 +498,9 @@ namespace TeachingSystem.Migrations
                         .HasColumnType("bigint")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
+                    b.Property<List<string>>("ClassesId")
+                        .HasColumnType("text[]");
+
                     b.Property<string>("UserId")
                         .HasColumnType("text");
 
@@ -588,10 +586,6 @@ namespace TeachingSystem.Migrations
                     b.HasOne("TeachingSystem.Data.User", "Teacher")
                         .WithMany()
                         .HasForeignKey("TeacherId");
-
-                    b.HasOne("TeachingSystem.Data.UserClasses", null)
-                        .WithMany("Classes")
-                        .HasForeignKey("UserClassesId");
                 });
 
             modelBuilder.Entity("TeachingSystem.Data.ClassChoice", b =>
