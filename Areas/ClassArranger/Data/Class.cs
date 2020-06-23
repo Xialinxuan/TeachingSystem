@@ -21,7 +21,7 @@ namespace TeachingSystem.Data
         public User Teacher { get; set; }
 
         // 选上的学生
-        public List<User> Students {get;set;}
+        public List<string> Students {get;set;}
 
         // 上课的教室
         public Classroom Classroom { get; set; }

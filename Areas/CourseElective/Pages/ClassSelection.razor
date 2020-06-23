@@ -68,9 +68,9 @@
                                                 }
                                             </td>
                                             <td style="width: 25%;">@context.showclass.Classroom.ClassroomName</td>
-                                            <td style="width: 15%;">@context.showclass.Students.Count / @context.showclass.Classroom.Capacity</td>
+                                            <td style="width: 15%;">@(context.showclass.Classroom.Capacity-context.showclass.Students.Count) / @context.showclass.Classroom.Capacity</td>
                                             <td style="width: 15%;">0</td>
-                                            <td><MatButton Raised="true">@context.state</MatButton></td>
+                                            <td><MatButton Raised="true" OnClick="@(e => select(context.showclass))">@context.state</MatButton></td>
                                         </MatTableRow>
                                     </MatTable>
                                 </MatExpansionPanelDetails>
@@ -208,7 +208,7 @@
 
 </MatTabGroup>
 
- 
+
 @code
 {
     [Inject] IJSRuntime JS { get; set; }
@@ -218,6 +218,7 @@
     List<Class> details;
     SearchModel myModel = new SearchModel();
     Template csTemplate = new Template();
+    UserClasses myClasses = new UserClasses();
     User user;
 
     protected override async Task OnInitializedAsync()
@@ -238,13 +239,23 @@
         }
         @* coursesList = await DbContext.Courses.ToListAsync(); *@
         csTemplate.setCourse(coursesList,coursesList,coursesList);
+        var mc = await DbContext.UserClasses.Include("User").Where(i => i.User.Id == user.Id).ToListAsync();
+        if(mc.Count==0){
+            UserClasses nc = new UserClasses{ClassesId=new List<string>(),User=user};
+            myClasses = nc;
+            DbContext.UserClasses.Add(myClasses);
+            DbContext.SaveChanges();
+        }
+        else{
+            myClasses = mc[0];
+        }
         await UpdateList();
     }
 
     async Task UpdateList()
     {
         courses.Clear();
-        var selectclasses = from m in DbContext.Classes.Include("Classroom").Include("Course").Include("Teacher").Include("Students")
+        var selectclasses = from m in DbContext.Classes.Include("Classroom").Include("Course").Include("Teacher")
                 select m;
         if (!string.IsNullOrEmpty(myModel.CourseName))
         {
@@ -266,7 +277,7 @@
             List<shownclass> showclasslist = new List<shownclass>();
             foreach(Class c in details)
             {
-                if(c.Students!=null&&c.Students.Contains(user))
+                if(c.Students.Contains(user.Id))
                     showclasslist.Add(new shownclass(c,"退课"));
                 else
                     showclasslist.Add(new shownclass(c,"选课"));
@@ -278,7 +289,7 @@
     async Task search()
     {
         courses.Clear();
-        var selectclasses = from m in DbContext.Classes.Include("Classroom").Include("Course").Include("Teacher").Include("Students")
+        var selectclasses = from m in DbContext.Classes.Include("Classroom").Include("Course").Include("Teacher")
                 select m;
         if (!string.IsNullOrEmpty(myModel.CourseName))
         {
@@ -300,7 +311,7 @@
             List<shownclass> showclasslist = new List<shownclass>();
             foreach(Class c in details)
             {
-                if(c.Students!=null&&c.Students.Contains(user))
+                if(c.Students!=null&&c.Students.Contains(user.Id))
                     showclasslist.Add(new shownclass(c,"退课"));
                 else
                     showclasslist.Add(new shownclass(c,"选课"));
@@ -341,7 +352,21 @@
         return timeStr;
     }
 
-
+    void select(Class c)
+    {         
+        if(c.Students.Contains(user.Id))
+        {             
+            c.Students.Remove(user.Id);
+            myClasses.ClassesId.Remove(c.ClassId);
+        }         
+        else
+        {             
+            c.Students.Add(user.Id);
+            myClasses.ClassesId.Add(c.ClassId);         
+        }         
+        DbContext.SaveChanges();         
+        UpdateList();     
+    }
     public class shownclass
     {
         public Class showclass { get; set; }

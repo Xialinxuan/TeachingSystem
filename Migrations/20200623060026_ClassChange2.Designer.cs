@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TeachingSystem.Data;
@@ -10,9 +11,10 @@ using TeachingSystem.Data;
 namespace TeachingSystem.Migrations
 {
     [DbContext(typeof(TSSDbContext))]
-    partial class TSSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200623060026_ClassChange2")]
+    partial class ClassChange2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,29 +50,29 @@ namespace TeachingSystem.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "afea13bd-b6bc-40e5-b1df-936052310a76",
-                            ConcurrencyStamp = "34162b8b-80bf-4946-b434-b5a46604d352",
+                            Id = "0fd07628-4e36-44f9-a781-0628ae7c7a7f",
+                            ConcurrencyStamp = "6c8149c8-aa27-4f30-9be8-4d52590d2f1a",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "8656801b-2a25-4c47-81ab-8d5e82214bc0",
-                            ConcurrencyStamp = "abec6b54-f27b-42c0-afe7-a6e094d24eac",
+                            Id = "5598022b-5b16-468e-b436-124c15efa49f",
+                            ConcurrencyStamp = "0bd5d6a1-2589-4b18-9cfa-c876b1d99507",
                             Name = "Teacher",
                             NormalizedName = "TEACHER"
                         },
                         new
                         {
-                            Id = "32f785ac-d64c-48fe-8415-69a49f96bb37",
-                            ConcurrencyStamp = "a254f4e4-29c8-4c66-bad4-5f92ec766557",
+                            Id = "fcf338cd-e9cc-4277-8c56-fb478078edec",
+                            ConcurrencyStamp = "9995c5e7-06a0-4446-8fa3-9b84715ffc1f",
                             Name = "Student",
                             NormalizedName = "STUDENT"
                         },
                         new
                         {
-                            Id = "d6305f11-c32d-457b-b69d-1717367c6930",
-                            ConcurrencyStamp = "ad5103fa-c46e-43ee-853d-fdcecff64bbc",
+                            Id = "c76ab141-19f7-438f-a5cf-876bf6e1f0e9",
+                            ConcurrencyStamp = "17d82df9-4972-4c73-a4de-f5839bc9de1d",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         });
@@ -195,9 +197,6 @@ namespace TeachingSystem.Migrations
                     b.Property<string>("CourseId")
                         .HasColumnType("text");
 
-                    b.Property<List<string>>("Students")
-                        .HasColumnType("text[]");
-
                     b.Property<List<int>>("TeachTime")
                         .HasColumnType("integer[]");
 
@@ -207,6 +206,9 @@ namespace TeachingSystem.Migrations
                     b.Property<string>("TestTime")
                         .HasColumnType("text");
 
+                    b.Property<long?>("UserClassesId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("ClassId");
 
                     b.HasIndex("ClassroomId");
@@ -214,6 +216,8 @@ namespace TeachingSystem.Migrations
                     b.HasIndex("CourseId");
 
                     b.HasIndex("TeacherId");
+
+                    b.HasIndex("UserClassesId");
 
                     b.ToTable("Classes");
                 });
@@ -402,6 +406,9 @@ namespace TeachingSystem.Migrations
                     b.Property<string>("Belong")
                         .HasColumnType("text");
 
+                    b.Property<string>("ClassId")
+                        .HasColumnType("text");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text");
@@ -454,6 +461,8 @@ namespace TeachingSystem.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ClassId");
+
                     b.HasIndex("NormalizedEmail")
                         .HasName("EmailIndex");
 
@@ -470,9 +479,6 @@ namespace TeachingSystem.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-
-                    b.Property<List<string>>("ClassesId")
-                        .HasColumnType("text[]");
 
                     b.Property<string>("UserId")
                         .HasColumnType("text");
@@ -548,6 +554,10 @@ namespace TeachingSystem.Migrations
                     b.HasOne("TeachingSystem.Data.User", "Teacher")
                         .WithMany()
                         .HasForeignKey("TeacherId");
+
+                    b.HasOne("TeachingSystem.Data.UserClasses", null)
+                        .WithMany("Classes")
+                        .HasForeignKey("UserClassesId");
                 });
 
             modelBuilder.Entity("TeachingSystem.Data.ClassChoice", b =>
@@ -606,6 +616,13 @@ namespace TeachingSystem.Migrations
                     b.HasOne("TeachingSystem.Data.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
+                });
+
+            modelBuilder.Entity("TeachingSystem.Data.User", b =>
+                {
+                    b.HasOne("TeachingSystem.Data.Class", null)
+                        .WithMany("Students")
+                        .HasForeignKey("ClassId");
                 });
 
             modelBuilder.Entity("TeachingSystem.Data.UserClasses", b =>

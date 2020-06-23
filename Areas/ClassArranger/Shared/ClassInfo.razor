@@ -123,6 +123,7 @@
         _class.Course = course;
         _class.Classroom = classroom;
         _class.TeachTime = teachTime;
+        _class.Students = new List<string>();
 
         if(create) {
             if(await DbContext.Classes.Where(c => c.ClassId == _class.ClassId).CountAsync() != 0) {
