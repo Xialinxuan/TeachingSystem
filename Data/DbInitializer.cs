@@ -77,6 +77,34 @@ namespace TeachingSystem.Data
                     userManager.AddToRoleAsync(user, "Teacher").Wait();
                 }
             }
+            if (userManager.FindByNameAsync("pjw").Result == null)
+            {
+                User user = new User
+                {
+                    UserName = "pjw",
+                    Email = "abc@xyz.com"
+                };
+                
+                IdentityResult result = userManager.CreateAsync(user, "pjw").Result;
+                if (result.Succeeded)
+                {
+                    userManager.AddToRoleAsync(user, "Teacher").Wait();
+                }
+            }
+            if (userManager.FindByNameAsync("lhy").Result == null)
+            {
+                User user = new User
+                {
+                    UserName = "lhy",
+                    Email = "abc@xyz.com"
+                };
+                
+                IdentityResult result = userManager.CreateAsync(user, "lhy").Result;
+                if (result.Succeeded)
+                {
+                    userManager.AddToRoleAsync(user, "Teacher").Wait();
+                }
+            }
             if (userManager.FindByNameAsync("manage").Result == null)
             {
                 User user = new User
@@ -86,6 +114,20 @@ namespace TeachingSystem.Data
                 };
                 
                 IdentityResult result = userManager.CreateAsync(user, "manage").Result;
+                if (result.Succeeded)
+                {
+                    userManager.AddToRoleAsync(user, "Manager").Wait();
+                }
+            }
+            if (userManager.FindByNameAsync("manage1").Result == null)
+            {
+                User user = new User
+                {
+                    UserName = "manage1",
+                    Email = "abc@xyz.com"
+                };
+                
+                IdentityResult result = userManager.CreateAsync(user, "manage1").Result;
                 if (result.Succeeded)
                 {
                     userManager.AddToRoleAsync(user, "Manager").Wait();

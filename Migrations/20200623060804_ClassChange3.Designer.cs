@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TeachingSystem.Data;
@@ -10,9 +11,10 @@ using TeachingSystem.Data;
 namespace TeachingSystem.Migrations
 {
     [DbContext(typeof(TSSDbContext))]
-    partial class TSSDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200623060804_ClassChange3")]
+    partial class ClassChange3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,29 +50,29 @@ namespace TeachingSystem.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "01907824-fce4-46b5-99e1-a2bb5c967905",
-                            ConcurrencyStamp = "90cf20c2-0556-4ca4-9f3d-d0e4984815df",
+                            Id = "c2417e87-0263-469a-9139-91f3d3d8328a",
+                            ConcurrencyStamp = "c33af9df-63d9-49c7-be1f-b9186847f9c8",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "1f77af71-f72c-4dc9-9b13-b38db219183a",
-                            ConcurrencyStamp = "dda333e7-7fd5-4723-ad4a-f49a78a46931",
+                            Id = "97f5a672-da81-4012-8ed5-0f5f9f2f18e1",
+                            ConcurrencyStamp = "308eadf4-006d-46bd-9f7b-feacd37f13cc",
                             Name = "Teacher",
                             NormalizedName = "TEACHER"
                         },
                         new
                         {
-                            Id = "784b6b7b-84e0-4497-89ce-6b8ca7772901",
-                            ConcurrencyStamp = "57648568-3e3b-4d6c-996c-b37522ffd289",
+                            Id = "26b00550-c5dd-4360-8b14-ea893c8cddc8",
+                            ConcurrencyStamp = "428b39a4-375b-4dae-99c7-2b34235b7b11",
                             Name = "Student",
                             NormalizedName = "STUDENT"
                         },
                         new
                         {
-                            Id = "a7033eeb-e0bd-4aa6-9a0b-5b33f304cc34",
-                            ConcurrencyStamp = "e863109c-e4f3-49bc-84c4-26ab30ad0f8d",
+                            Id = "2b41aaee-695e-49e6-aa4e-2289c6f4512c",
+                            ConcurrencyStamp = "3c0aa4c7-4d65-4c13-9a2b-2aa18652ea55",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         });
@@ -184,33 +186,6 @@ namespace TeachingSystem.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("TeachingSystem.Data.Apply", b =>
-                {
-                    b.Property<long>("ApplyId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-
-                    b.Property<string>("ClassId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasColumnType("character varying(100)")
-                        .HasMaxLength(100);
-
-                    b.Property<string>("StudentId")
-                        .HasColumnType("text");
-
-                    b.HasKey("ApplyId");
-
-                    b.HasIndex("ClassId");
-
-                    b.HasIndex("StudentId");
-
-                    b.ToTable("Applies");
-                });
-
             modelBuilder.Entity("TeachingSystem.Data.Class", b =>
                 {
                     b.Property<string>("ClassId")
@@ -234,6 +209,9 @@ namespace TeachingSystem.Migrations
                     b.Property<string>("TestTime")
                         .HasColumnType("text");
 
+                    b.Property<long?>("UserClassesId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("ClassId");
 
                     b.HasIndex("ClassroomId");
@@ -241,6 +219,8 @@ namespace TeachingSystem.Migrations
                     b.HasIndex("CourseId");
 
                     b.HasIndex("TeacherId");
+
+                    b.HasIndex("UserClassesId");
 
                     b.ToTable("Classes");
                 });
@@ -498,9 +478,6 @@ namespace TeachingSystem.Migrations
                         .HasColumnType("bigint")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<List<string>>("ClassesId")
-                        .HasColumnType("text[]");
-
                     b.Property<string>("UserId")
                         .HasColumnType("text");
 
@@ -562,17 +539,6 @@ namespace TeachingSystem.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TeachingSystem.Data.Apply", b =>
-                {
-                    b.HasOne("TeachingSystem.Data.Class", "Class")
-                        .WithMany()
-                        .HasForeignKey("ClassId");
-
-                    b.HasOne("TeachingSystem.Data.User", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentId");
-                });
-
             modelBuilder.Entity("TeachingSystem.Data.Class", b =>
                 {
                     b.HasOne("TeachingSystem.Data.Classroom", "Classroom")
@@ -586,6 +552,10 @@ namespace TeachingSystem.Migrations
                     b.HasOne("TeachingSystem.Data.User", "Teacher")
                         .WithMany()
                         .HasForeignKey("TeacherId");
+
+                    b.HasOne("TeachingSystem.Data.UserClasses", null)
+                        .WithMany("Classes")
+                        .HasForeignKey("UserClassesId");
                 });
 
             modelBuilder.Entity("TeachingSystem.Data.ClassChoice", b =>
