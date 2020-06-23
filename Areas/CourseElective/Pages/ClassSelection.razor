@@ -5,6 +5,7 @@
 
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<User> _userManager
+@inject IMatToaster Toaster
 
 @using TeachingSystem.Areas.CourseElective.Shared
 <MatTabGroup>
@@ -69,8 +70,8 @@
                                             </td>
                                             <td style="width: 25%;">@context.showclass.Classroom.ClassroomName</td>
                                             <td style="width: 15%;">@(context.showclass.Classroom.Capacity-context.showclass.Students.Count) / @context.showclass.Classroom.Capacity</td>
-                                            <td style="width: 15%;">0</td>
-                                            <td><MatButton Raised="true" OnClick="@(e => select(context.showclass))">@context.state</MatButton></td>
+                                            <td style="width: 15%;">@context.showclass.Students.Count</td>
+                                            <td><MatButton Raised="@context.raise" Outlined="@context.outline" OnClick="@(e => select(context.showclass))">@context.state</MatButton></td>
                                         </MatTableRow>
                                     </MatTable>
                                 </MatExpansionPanelDetails>
@@ -205,7 +206,6 @@
     <MatTab Label="补选课程">
         <ClassApply/>
     </MatTab>
-
 </MatTabGroup>
 
 
@@ -282,8 +282,9 @@
                 else
                     showclasslist.Add(new shownclass(c,"选课"));
             }
-            courses.Add(showclasslist); 
+            courses.Add(showclasslist.OrderBy(i => i.showclass.ClassId).ToList()); 
         }
+        courses.OrderBy(i=>i[0].showclass.Course.CourseId).ToList();
     }
     
     async Task search()
@@ -316,8 +317,10 @@
                 else
                     showclasslist.Add(new shownclass(c,"选课"));
             }
-            courses.Add(showclasslist); 
+            courses.Add(showclasslist.OrderBy(i => i.showclass.ClassId).ToList()); 
         }
+        courses.OrderBy(i=>i[0].showclass.Course.CourseId).ToList();
+        Toaster.Add("搜索成功", MatToastType.Success);
     }
 
     String indexToTimeStr(int index) {
@@ -353,28 +356,82 @@
     }
 
     void select(Class c)
-    {         
+    {   
         if(c.Students.Contains(user.Id))
         {             
             c.Students.Remove(user.Id);
             myClasses.ClassesId.Remove(c.ClassId);
+            Toaster.Add("退课成功", MatToastType.Success);
+            DbContext.SaveChanges();
+            UpdateList(); 
         }         
         else
-        {             
-            c.Students.Add(user.Id);
-            myClasses.ClassesId.Add(c.ClassId);         
-        }         
-        DbContext.SaveChanges();         
-        UpdateList();     
+        {   
+            if((c.Classroom.Capacity-c.Students.Count)<1)
+            {
+                Toaster.Add("选课人数已满", MatToastType.Danger);
+            }
+            else{
+                bool conflict_1 = false, conflict_2 = false;
+                string coursename="", teachername="";
+                foreach(string s in myClasses.ClassesId)
+                {
+                    var _c = DbContext.Classes.Include("Course").Include("Teacher").Where(i => i.ClassId == s).ToList()[0]; 
+                    int i = 0;
+                    for(i = 0; i < _c.TeachTime.Count ; i++)
+                    {
+                        if((_c.TeachTime[i]&c.TeachTime[i])!=0){
+                            conflict_1 = true;
+                            coursename = c.Course.Name;
+                            teachername = c.Teacher.Name;
+                            break;
+                        }
+                        if(_c.TestTime!=null&&_c.TestTime==c.TestTime)
+                        {
+                            conflict_2 = true;
+                            coursename = c.Course.Name;
+                            teachername = c.Teacher.Name;
+                            break;
+                        }
+                    }
+                        if(conflict_1 || conflict_2)
+                            break;
+                }
+                if(conflict_1){
+                    Toaster.Add("与"+teachername+"老师\""+coursename+"\"的上课时间冲突", MatToastType.Danger);
+                }
+                else if(conflict_2){
+                    Toaster.Add("与"+teachername+"老师\""+coursename+"\"的考试时间冲突", MatToastType.Danger);
+                }
+                else{
+                    c.Students.Add(user.Id);
+                    myClasses.ClassesId.Add(c.ClassId);   
+                    Toaster.Add("选课成功", MatToastType.Success);
+                    DbContext.SaveChanges();
+                    UpdateList(); 
+                }      
+            }
+        }             
     }
+
     public class shownclass
     {
         public Class showclass { get; set; }
         public string state { get; set; }
+        public bool raise { get; set; }
+        public bool outline { get; set; }
         public shownclass(Class c, string s)
         {
             this.showclass=c;
             this.state=s;
+            if(s=="选课"){
+                raise = true;
+                outline = false;
+            }
+            else{
+                raise = false;
+                outline = true;
+            }
         }
     }
     public class SearchModel
@@ -388,7 +445,6 @@
         public List<int> needcredits = new List<int>();
         public List<int> currentcredits= new List<int>();
         public List<List<Course>> Courselists = new List<List<Course>>();
-        
         public void setCourse(List<Course> c0, List<Course> c1, List<Course> c2)
         {
             needcredits.Clear();currentcredits.Clear();Courselists.Clear();
