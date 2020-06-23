@@ -94,10 +94,13 @@
         <EditForm Model="applyModel" OnValidSubmit="postApply">
             <DataAnnotationsValidator/>
             <p>
-                <MatTextField Label="课程编号" @bind-Value="applyModel.ApplyClass.Course.CourseId" FullWidth="true" ReadOnly="true"/>
+                <MatTextField Label="上课教师" @bind-Value="applyModel.TeacherName" FullWidth="true" ReadOnly="true"/>
             </p>
             <p>
-                <MatTextField Label="课程名称" @bind-Value="applyModel.ApplyClass.Course.Name" FullWidth="true" ReadOnly="true"/>
+                <MatTextField Label="课程名称" @bind-Value="applyModel.CourseName" FullWidth="true" ReadOnly="true"/>
+            </p>
+            <p>
+                <MatTextField Label="课程编号" @bind-Value="applyModel.CourseId" FullWidth="true" ReadOnly="true"/>
             </p>
             <p>
                 <MatTextField Label="申请理由" @bind-Value="applyModel.reason" TextArea="true" />
@@ -116,13 +119,20 @@
 
 @code 
 {
+    @* [Inject] IJSRuntime JS { get; set; } *@
     ApplyModel applyModel = new ApplyModel();
-
+    List<Class> classes;
+    List<List<shownclass>> courses = new List<List<shownclass>>();
+    List<Class> details;
+    SearchModel myModel = new SearchModel();
     bool dialogIsOpen = false;
-
+    User user = null;
     void OpenDialog(Class c)
     {
         applyModel.ApplyClass = c;
+        applyModel.CourseId = c.Course.CourseId;
+        applyModel.CourseName = c.Course.Name;
+        applyModel.TeacherName = c.Teacher.Name;
         applyModel.reason = null;
         dialogIsOpen = true;
     }
@@ -134,32 +144,23 @@
         Toaster.Add("补选申请提交成功！", MatToastType.Success);
     }
 
-    public class ApplyModel
-    {
-        public Class ApplyClass { get; set; }
-
-        [Required(ErrorMessage = "请填写申请理由")]
-        [StringLength(60, ErrorMessage = "申请理由过长")]
-        public string reason { get; set; }
-    }
-}
-
-@code
-{
-    [Inject] IJSRuntime JS { get; set; }
-    List<Class> classes;
-    List<Course> coursesList = new List<Course>();
-    List<List<shownclass>> courses = new List<List<shownclass>>();
-    List<Class> details;
-    SearchModel myModel = new SearchModel();
-
     public class SearchModel
     {
         public string CourseName { get; set; }
         public string CourseID { get; set; }
         public string TeacherName { get; set; }
     }
-    User user;
+
+    public class ApplyModel
+    {
+        public Class ApplyClass { get; set; }
+        public string CourseId { get; set; }
+        public string CourseName { get; set; }
+        public string TeacherName { get; set; }
+        [Required(ErrorMessage = "请填写申请理由")]
+        [StringLength(60, ErrorMessage = "申请理由过长")]
+        public string reason { get; set; }
+    }
     
     async Task search()
     {
@@ -231,7 +232,6 @@
         return timeStr;
     }
 
-
     public class shownclass
     {
         public Class showclass { get; set; }
@@ -243,20 +243,4 @@
         }
     }
 
-    public class Template
-    {
-        public List<int> needcredits = new List<int>();
-        public List<int> currentcredits= new List<int>();
-        public List<List<Course>> Courselists = new List<List<Course>>();
-        
-        public void setCourse(List<Course> c0, List<Course> c1, List<Course> c2)
-        {
-            needcredits.Clear();currentcredits.Clear();Courselists.Clear();
-            needcredits.Add(100);needcredits.Add(30);needcredits.Add(10);
-            currentcredits.Add(0);currentcredits.Add(0);currentcredits.Add(0);
-            this.Courselists.Add(c0);
-            this.Courselists.Add(c1);
-            this.Courselists.Add(c2);
-        }
-    }
 }
