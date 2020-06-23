@@ -114,7 +114,12 @@
                                     <td style="width: 10%;">@context.TheoryHours</td>
                                     <td style="width: 10%;">@context.PracticeHours</td>
                                     <td style="width: 10%;">@(context.TheoryHours + context.PracticeHours/2.0)</td>
-                                    <td><MatButton Raised="true">未修</MatButton></td>
+                                    <td><MatButton Raised="true">@if(userCourseIdlist.Contains(context.CourseId)){
+                                        <div>已修</div>
+                                        }else{
+                                        <div>未修</div>
+                                        }
+                                    </MatButton></td>
                                 </MatTableRow>
                             </MatTable>
                         </MatExpansionPanelDetails>
@@ -151,7 +156,12 @@
                                     <td style="width: 10%;">@context.TheoryHours</td>
                                     <td style="width: 10%;">@context.PracticeHours</td>
                                     <td style="width: 10%;">@(context.TheoryHours + context.PracticeHours/2.0)</td>
-                                    <td><MatButton Raised="true">未修</MatButton></td>
+                                    <td><MatButton Raised="true">@if(userCourseIdlist.Contains(context.CourseId)){
+                                        <div>已修</div>
+                                        }else{
+                                        <div>未修</div>
+                                        }
+                                    </MatButton></td>
                                 </MatTableRow>
                             </MatTable>
                         </MatExpansionPanelDetails>
@@ -188,7 +198,12 @@
                                     <td style="width: 10%;">@context.TheoryHours</td>
                                     <td style="width: 10%;">@context.PracticeHours</td>
                                     <td style="width: 10%;">@(context.TheoryHours + context.PracticeHours/2.0)</td>
-                                    <td><MatButton Raised="true">未修</MatButton></td>
+                                    <td><MatButton Raised="true">@if(userCourseIdlist.Contains(context.CourseId)){
+                                        <div>已修</div>
+                                        }else{
+                                        <div>未修</div>
+                                        }
+                                    </MatButton></td>
                                 </MatTableRow>
                             </MatTable>
                         </MatExpansionPanelDetails>
