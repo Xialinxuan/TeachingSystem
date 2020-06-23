@@ -70,9 +70,9 @@
                                     <td style="width: 15%;">0</td>
                                     <td>
                                         @if(@context.state == "选课"){
-                                            <MatButton Raised="true" OnClick="@(e => OpenDialog(context.showclass))">补选</MatButton>
+                                            <MatButton Raised="true" OnClick="@(e => OpenDialog(context))">补选</MatButton>
                                         } else {
-                                            <MatButton Raised="true" OnClick="@(e => OpenDialog(context.showclass))">撤销</MatButton>
+                                            <MatButton Raised="true" OnClick="@(e => OpenDialogDecline(context))">撤销</MatButton>
                                         }
                                     </td>
                                 </MatTableRow>
@@ -116,6 +116,14 @@
     </MatDialogActions>
 </MatDialog>
 
+<MatDialog @bind-IsOpen="@declineIsOpen">
+    <MatDialogTitle>确定撤销对 @applyModel.CourseName 的补选申请？</MatDialogTitle>
+    <MatDialogActions>
+        <MatButton OnClick="@declineApply">确认</MatButton>
+        <MatButton OnClick="@(e => { declineIsOpen = false; })">取消</MatButton>
+    </MatDialogActions>
+</MatDialog>
+
 
 @code 
 {
@@ -126,9 +134,14 @@
     List<Class> details;
     SearchModel myModel = new SearchModel();
     bool dialogIsOpen = false;
+
+    bool declineIsOpen = false;
     User user = null;
-    void OpenDialog(Class c)
+    shownclass applyObj;
+    void OpenDialog(shownclass sc)
     {
+        applyObj = sc;
+        Class c = sc.showclass;
         applyModel.ApplyClass = c;
         applyModel.CourseId = c.Course.CourseId;
         applyModel.CourseName = c.Course.Name;
@@ -137,11 +150,56 @@
         dialogIsOpen = true;
     }
 
-    @* async Task postApply() *@
-    void postApply()
+    void OpenDialogDecline(shownclass sc)
     {
+        applyObj = sc;
+        Class c = sc.showclass;
+        applyModel.ApplyClass = c;
+        applyModel.CourseId = c.Course.CourseId;
+        applyModel.CourseName = c.Course.Name;
+        applyModel.TeacherName = c.Teacher.Name;
+        applyModel.reason = null;
+        declineIsOpen = true;
+    }
+    async Task postApply()
+    {
+        Apply apply = new Apply();
+        apply.Reason = applyModel.reason;
+        apply.Student = user;
+        apply.Class = applyModel.ApplyClass;
+        await DbContext.Applies.AddAsync(apply);
+        await DbContext.SaveChangesAsync();
+
+        applyObj.state="退课";
         dialogIsOpen = false;
         Toaster.Add("补选申请提交成功！", MatToastType.Success);
+    }
+
+    async Task declineApply()
+    {
+        List<Apply> apply = new List<Apply>();
+        var all = from m in DbContext.Applies.Include("Class").Include("Student")
+            select m;
+        all = all.Where(s=>s.Class.ClassId.Equals(applyModel.ApplyClass.ClassId));
+        all = all.Where(s=>s.Student.Id.Equals(user.Id));
+        apply = all.ToList();
+        foreach(var a in apply){
+            DbContext.Applies.Remove(a);
+            await DbContext.SaveChangesAsync();
+        }
+        applyObj.state="选课";
+        declineIsOpen = false;
+        Toaster.Add("撤销补选申请成功！", MatToastType.Success);
+    }
+
+    Boolean hasApply(Class c)
+    {
+        List<Apply> apply = new List<Apply>();
+        var all = DbContext.Applies.Include("Class").Include("Student");
+        apply = all.Where(s=>s.Class.ClassId == c.ClassId).Where(s=>s.Student.Id == user.Id).ToList();
+        if(apply.Count>0)
+            return true;
+        return false;
     }
 
     public class SearchModel
@@ -183,6 +241,8 @@
         {
             selectclasses = selectclasses.Where(s => s.Teacher.Name.Contains(myModel.TeacherName));
         }
+        //
+
         classes = selectclasses.ToList(); 
         IEnumerable<IGrouping<string, Class>> query = classes.GroupBy(x => x.Course.CourseId);
         foreach (IGrouping<string, Class> info in query)
@@ -191,7 +251,7 @@
             List<shownclass> showclasslist = new List<shownclass>();
             foreach(Class c in details)
             {
-                if(c.Students!=null&&c.Students.Contains(user.Id))
+                if((c.Students!=null&&c.Students.Contains(user.Id))||(hasApply(c)))
                     showclasslist.Add(new shownclass(c,"退课"));
                 else
                     showclasslist.Add(new shownclass(c,"选课"));

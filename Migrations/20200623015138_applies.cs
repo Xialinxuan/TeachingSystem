@@ -1,21 +1,12 @@
-﻿using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace TeachingSystem.Migrations
 {
-    public partial class ApplyBegin : Migration
+    public partial class applies : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_AspNetUsers_Classes_ClassId",
-                table: "AspNetUsers");
-
-            migrationBuilder.DropIndex(
-                name: "IX_AspNetUsers_ClassId",
-                table: "AspNetUsers");
-
             migrationBuilder.DeleteData(
                 table: "AspNetRoles",
                 keyColumn: "Id",
@@ -43,15 +34,6 @@ namespace TeachingSystem.Migrations
             migrationBuilder.DropColumn(
                 name: "UserName",
                 table: "SpecialityCourse");
-
-            migrationBuilder.DropColumn(
-                name: "ClassId",
-                table: "AspNetUsers");
-
-            migrationBuilder.AddColumn<List<string>>(
-                name: "Students",
-                table: "Classes",
-                nullable: true);
 
             migrationBuilder.CreateTable(
                 name: "Applies",
@@ -85,10 +67,10 @@ namespace TeachingSystem.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "01907824-fce4-46b5-99e1-a2bb5c967905", "90cf20c2-0556-4ca4-9f3d-d0e4984815df", "Admin", "ADMIN" },
-                    { "1f77af71-f72c-4dc9-9b13-b38db219183a", "dda333e7-7fd5-4723-ad4a-f49a78a46931", "Teacher", "TEACHER" },
-                    { "784b6b7b-84e0-4497-89ce-6b8ca7772901", "57648568-3e3b-4d6c-996c-b37522ffd289", "Student", "STUDENT" },
-                    { "a7033eeb-e0bd-4aa6-9a0b-5b33f304cc34", "e863109c-e4f3-49bc-84c4-26ab30ad0f8d", "Manager", "MANAGER" }
+                    { "31f1e846-4bee-43f5-b4e3-6d1743a469c9", "ba8994db-7594-4543-8bd0-dd312e02e12c", "Admin", "ADMIN" },
+                    { "05a25a05-c6eb-4c29-80a0-45cd26b2754e", "367fa378-434f-453f-be19-5cf8c044735c", "Teacher", "TEACHER" },
+                    { "40d39ac6-3bad-4ddf-8775-7dc2987e397d", "35dd9db8-3651-428c-88ee-5f03f1d031e3", "Student", "STUDENT" },
+                    { "c5a29d09-81f8-40cd-be53-ce030576e3d5", "1970c364-2b94-4f38-aae7-e06e7e9d1be2", "Manager", "MANAGER" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -110,26 +92,22 @@ namespace TeachingSystem.Migrations
             migrationBuilder.DeleteData(
                 table: "AspNetRoles",
                 keyColumn: "Id",
-                keyValue: "01907824-fce4-46b5-99e1-a2bb5c967905");
+                keyValue: "05a25a05-c6eb-4c29-80a0-45cd26b2754e");
 
             migrationBuilder.DeleteData(
                 table: "AspNetRoles",
                 keyColumn: "Id",
-                keyValue: "1f77af71-f72c-4dc9-9b13-b38db219183a");
+                keyValue: "31f1e846-4bee-43f5-b4e3-6d1743a469c9");
 
             migrationBuilder.DeleteData(
                 table: "AspNetRoles",
                 keyColumn: "Id",
-                keyValue: "784b6b7b-84e0-4497-89ce-6b8ca7772901");
+                keyValue: "40d39ac6-3bad-4ddf-8775-7dc2987e397d");
 
             migrationBuilder.DeleteData(
                 table: "AspNetRoles",
                 keyColumn: "Id",
-                keyValue: "a7033eeb-e0bd-4aa6-9a0b-5b33f304cc34");
-
-            migrationBuilder.DropColumn(
-                name: "Students",
-                table: "Classes");
+                keyValue: "c5a29d09-81f8-40cd-be53-ce030576e3d5");
 
             migrationBuilder.AddColumn<string>(
                 name: "UserID",
@@ -143,12 +121,6 @@ namespace TeachingSystem.Migrations
                 type: "text",
                 nullable: true);
 
-            migrationBuilder.AddColumn<string>(
-                name: "ClassId",
-                table: "AspNetUsers",
-                type: "text",
-                nullable: true);
-
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
@@ -159,19 +131,6 @@ namespace TeachingSystem.Migrations
                     { "f164fbaf-c497-49e4-b935-d981e27b62a5", "c1573430-6534-4089-acae-1c4a3d29cbdc", "Student", "STUDENT" },
                     { "f94dcf50-bcf2-4d25-9870-dd8faa68efc5", "191c3461-779e-4034-890f-f68097626640", "Manager", "MANAGER" }
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AspNetUsers_ClassId",
-                table: "AspNetUsers",
-                column: "ClassId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_AspNetUsers_Classes_ClassId",
-                table: "AspNetUsers",
-                column: "ClassId",
-                principalTable: "Classes",
-                principalColumn: "ClassId",
-                onDelete: ReferentialAction.Restrict);
         }
     }
 }

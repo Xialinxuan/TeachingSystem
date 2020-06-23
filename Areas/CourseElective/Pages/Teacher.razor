@@ -1,12 +1,15 @@
 @page "/CourseElective/Teachercopy"
 @using Microsoft.AspNetCore.Mvc;
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<User> _userManager
 @attribute [Authorize(Roles = "Teacher")]
 
 @*创建标题页 搜索*@
-<MatTabGroup>
 
+<MatTabGroup>
     <MatTab Label="课程名单">
-        <EditForm Model="myDownloadModel" OnValidSubmit="search"> @*在这里绑定按钮触发的函数*@
+        
+        <EditForm Model="myDownloadModel" OnValidSubmit="search"> 
             <DataAnnotationsValidator/>
                 <div class="mat-layout-grid">
                     <div class="mat-layout-grid-inner">
@@ -20,9 +23,8 @@
                         <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
                             <MatTextField @bind-Value="myDownloadModel.ClassID" Label="ClassID"></MatTextField>
                         </div>
-                        @*文本框 bindvalue通过按钮触发*@
                         <div class="mat-layout-grid-cell mat-layout-grid-cell-span-1">
-                            <MatButton Type="submit" Raised="true">search</MatButton> @*搜索按钮*@
+                            <MatButton Type="submit" Raised="true">search</MatButton>
                         </div>
                         <div class="mat-layout-grid-cell mat-layout-grid-cell-span-1"></div>
                     </div>
@@ -38,7 +40,7 @@
                             foreach(var cla in classes){
                                 <MatExpansionPanel style="margin-top: 1%;">
                                 <MatExpansionPanelSummary>
-                                <MatExpansionPanelHeader>@cla.Course.Name @cla.ClassId</MatExpansionPanelHeader>
+                                <MatExpansionPanelHeader>@cla.ClassId @cla.Course.Name</MatExpansionPanelHeader>
                                 </MatExpansionPanelSummary>
                                 <MatExpansionPanelDetails>
                                     <MatTable Items="@cars" class="mat-elevation-z5" ShowPaging="false">
@@ -94,15 +96,15 @@
             </tr>
         </thead>
         <tbody>
-            @if(courses != null){
-                  foreach(var course in courses){
+            @if(Applies != null){
+                  foreach(var apply in Applies){
                     <tr>
-                        <td>@course.CourseId</td>
-                        <td>@course.Name</td>
-                        <td>@course.Department</td>
-                        <td><button type="button" class="btn btn-link" @onclick="@(_ => {recordToDelete=course;reasonIsOpen=true;})">查看理由</button></td>
-                        <td><button type="button" class="btn btn-link" @onclick="@(_ => {recordToDelete=course;dialogAllowIsOpen=true;})">通过</button>
-                        |<button type="button" class="btn btn-link" @onclick="@(_ => {recordToDelete=course;dialogRefuseIsOpen=true;})">拒绝</button></td>
+                        <td>@apply?.Student.UserName</td>
+                        <td>@apply?.Class.Course.Name</td>
+                        <td>@apply?.Class.ClassId</td>
+                        <td><button type="button" class="btn btn-link" @onclick="@(_ => {recordToDelete=apply;reasonIsOpen=true;})">查看理由</button></td>
+                        <td><button type="button" class="btn btn-link" @onclick="@(_ => {recordToDelete=apply;dialogAllowIsOpen=true;})">通过</button>
+                        |<button type="button" class="btn btn-link" @onclick="@(_ => {recordToDelete=apply;dialogRefuseIsOpen=true;})">拒绝</button></td>
                     </tr>
                   
                 }
@@ -117,7 +119,7 @@
     <MatDialog @bind-IsOpen="@dialogAllowIsOpen">
         <MatDialogTitle>通过补选</MatDialogTitle>
         <MatDialogContent>
-            <p>真的要通过 @recordToDelete?.Name 的补选申请申请吗？</p>
+            <p>真的要通过 @recordToDelete?.Student.UserName 的补选申请申请吗？</p>
         </MatDialogContent>
         <MatDialogActions>
             <MatButton OnClick="@(e => { dialogAllowIsOpen = false; })">否</MatButton>
@@ -128,7 +130,7 @@
     <MatDialog @bind-IsOpen="@dialogRefuseIsOpen">
         <MatDialogTitle>不通过补选</MatDialogTitle>
         <MatDialogContent>
-            <p>确定不通过 @recordToDelete?.Name 的补选吗？</p>
+            <p>确定不通过 @recordToDelete?.Student.UserName 的补选吗？</p>
         </MatDialogContent>
         <MatDialogActions>
             <MatButton OnClick="@(e => { dialogRefuseIsOpen = false; })">否</MatButton>
@@ -139,7 +141,7 @@
     <MatDialog @bind-IsOpen="@reasonIsOpen">
         <MatDialogTitle>补选理由</MatDialogTitle>
         <MatDialogContent>
-            <p>@recordToDelete?.Name  这是一段非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长非常长的测试</p>
+            <p>@recordToDelete?.Reason </p>
         </MatDialogContent>
         <MatDialogActions>
             <MatButton OnClick="@(e => { reasonIsOpen = false; })">关闭</MatButton>
@@ -156,6 +158,7 @@
     [Inject] IJSRuntime JS { get; set; }
     IEnumerable<Class> classes;
     DownloadModel myDownloadModel = new DownloadModel();
+    User user;
     public class Car
     {
         public string Name { get; set; }
@@ -183,16 +186,19 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        user = await _userManager.GetUserAsync(authState.User);
         @*分页面1初始化*@
         await search();
 
         @*分页面2初始化*@
-        size = await DbContext.Courses.CountAsync();
+        size = await DbContext.Applies.CountAsync();
         await UpdateList1();
     }
+
     async Task search()
     {
-        var selectclasses = from m in DbContext.Classes
+        var selectclasses = from m in DbContext.Classes.Include("Course").Where(s=>s.Teacher == user)
                     select m;
         if (!string.IsNullOrEmpty(myDownloadModel.CourseName))
         {
@@ -226,14 +232,18 @@
 @*part2 补选申请审核*@
 @code
 {
+
     int page = 0;
     int pageSize = 25;
     int size = 0;
     bool dialogAllowIsOpen = false;@*允许选课二次确认窗口指示标识*@
     bool dialogRefuseIsOpen = false;@*拒绝选课二次确认窗口指示标识*@
     bool reasonIsOpen = false;@*显示理由窗口指示标识*@
-    IEnumerable<Course> courses;
-    Course recordToDelete = null;
+    
+    IEnumerable<Apply> Applies;
+
+    Apply recordToDelete;
+
     async Task OnPage(MatPaginatorPageEvent e)
     {
         pageSize = e.PageSize;
@@ -243,7 +253,7 @@
     }
     async Task DeleteRecord() {
         
-        DbContext.Courses.Remove(recordToDelete);
+        DbContext.Applies.Remove(recordToDelete);
         await DbContext.SaveChangesAsync();
         await UpdateList1();
         dialogAllowIsOpen = false;
@@ -255,15 +265,33 @@
         目标： 向classes中的class中的studentlist添加学生
         目标： 向学生表中学生list class 添加 classid
         *@
+        User stu = recordToDelete.Student;
+        string claId = recordToDelete.Class.ClassId;
+        Class cla = recordToDelete.Class;
+
+        Class ptrc = DbContext.Classes.Where(s=>s.ClassId==claId).FirstOrDefault();
+        UserClasses ptruc = DbContext.UserClasses.Include("User").Where(u=>u.User == stu).FirstOrDefault();
+        if(ptruc==null)
+        {
+            UserClasses uc = new UserClasses();
+            uc.User = stu;
+            uc.ClassesId = new List<string>();
+            uc.ClassesId.Add(claId);
+            DbContext.UserClasses.Add(uc);
+            DbContext.SaveChanges();
+        }else
+        {
+            ptruc.ClassesId.Add(claId);
+            DbContext.SaveChanges();
+        }
+        ptrc.Students.Add(stu.Id);
+        DbContext.SaveChanges();
 
         await DeleteRecord();
-        DbContext.Courses.Remove(recordToDelete);
-        await DbContext.SaveChangesAsync();
-        
     }
     async Task UpdateList1()
     {
-        courses = await DbContext.Courses.Skip(page * pageSize).Take(pageSize).ToListAsync();
-       
+        var all = DbContext.Applies.Include("Class").Include("Student").Where(s => s.Class.Teacher == user);
+        Applies = await all.Skip(page * pageSize).Take(pageSize).ToListAsync();
     }
 }

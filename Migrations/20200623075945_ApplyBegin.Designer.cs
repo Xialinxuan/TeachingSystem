@@ -11,7 +11,7 @@ using TeachingSystem.Data;
 namespace TeachingSystem.Migrations
 {
     [DbContext(typeof(TSSDbContext))]
-    [Migration("20200623050330_ApplyBegin")]
+    [Migration("20200623075945_ApplyBegin")]
     partial class ApplyBegin
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,29 +50,29 @@ namespace TeachingSystem.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "01907824-fce4-46b5-99e1-a2bb5c967905",
-                            ConcurrencyStamp = "90cf20c2-0556-4ca4-9f3d-d0e4984815df",
+                            Id = "29643f0d-fb6c-476d-af37-b98eb6675b15",
+                            ConcurrencyStamp = "38c3fdcd-38e5-4d59-9f13-b2737567ce8e",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "1f77af71-f72c-4dc9-9b13-b38db219183a",
-                            ConcurrencyStamp = "dda333e7-7fd5-4723-ad4a-f49a78a46931",
+                            Id = "96395183-851f-4285-a24e-3c08723b3d04",
+                            ConcurrencyStamp = "5e7de6bb-338d-485d-82ef-7fa43f88b87c",
                             Name = "Teacher",
                             NormalizedName = "TEACHER"
                         },
                         new
                         {
-                            Id = "784b6b7b-84e0-4497-89ce-6b8ca7772901",
-                            ConcurrencyStamp = "57648568-3e3b-4d6c-996c-b37522ffd289",
+                            Id = "6dddb857-c17c-4212-aa0c-f50e9b6b9c93",
+                            ConcurrencyStamp = "2b8122bf-f418-4ad1-bf18-858f24097fd9",
                             Name = "Student",
                             NormalizedName = "STUDENT"
                         },
                         new
                         {
-                            Id = "a7033eeb-e0bd-4aa6-9a0b-5b33f304cc34",
-                            ConcurrencyStamp = "e863109c-e4f3-49bc-84c4-26ab30ad0f8d",
+                            Id = "ff020545-0123-4f7f-bb97-d8d53e8c8758",
+                            ConcurrencyStamp = "091a4966-efdf-4b81-8b53-0f97a0e50781",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         });

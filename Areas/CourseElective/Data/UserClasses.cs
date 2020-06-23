@@ -15,7 +15,7 @@ namespace TeachingSystem.Data
         public long UserClassesId { get; set; }
 
         // 对应的教学班
-        public List<Class> Classes { get; set; }
+        public List<string> ClassesId { get; set; }
 
         // 所属的用户
         public User User { get; set; }
