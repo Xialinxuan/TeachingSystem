@@ -244,7 +244,7 @@
     async Task UpdateList()
     {
         courses.Clear();
-        var selectclasses = from m in DbContext.Classes.Include("Classroom").Include("Course").Include("Teacher").Include("Students")
+        var selectclasses = from m in DbContext.Classes.Include("Classroom").Include("Course").Include("Teacher")
                 select m;
         if (!string.IsNullOrEmpty(myModel.CourseName))
         {
@@ -278,7 +278,7 @@
     async Task search()
     {
         courses.Clear();
-        var selectclasses = from m in DbContext.Classes.Include("Classroom").Include("Course").Include("Teacher").Include("Students")
+        var selectclasses = from m in DbContext.Classes.Include("Classroom").Include("Course").Include("Teacher")
                 select m;
         if (!string.IsNullOrEmpty(myModel.CourseName))
         {

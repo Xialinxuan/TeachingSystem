@@ -136,7 +136,7 @@
 
     public class ApplyModel
     {
-        public Class ApplyClass;
+        public Class ApplyClass { get; set; }
 
         [Required(ErrorMessage = "请填写申请理由")]
         [StringLength(60, ErrorMessage = "申请理由过长")]
@@ -152,6 +152,13 @@
     List<List<shownclass>> courses = new List<List<shownclass>>();
     List<Class> details;
     SearchModel myModel = new SearchModel();
+
+    public class SearchModel
+    {
+        public string CourseName { get; set; }
+        public string CourseID { get; set; }
+        public string TeacherName { get; set; }
+    }
     User user;
     
     async Task search()
@@ -161,7 +168,7 @@
             user = await _userManager.GetUserAsync(authState.User);
         }
         courses.Clear();
-        var selectclasses = from m in DbContext.Classes.Include("Classroom").Include("Course").Include("Teacher").Include("Students")
+        var selectclasses = from m in DbContext.Classes.Include("Classroom").Include("Course").Include("Teacher")
                 select m;
         if (!string.IsNullOrEmpty(myModel.CourseName))
         {
@@ -235,12 +242,7 @@
             this.state=s;
         }
     }
-    public class SearchModel
-    {
-        public string CourseName { get; set; }
-        public string CourseID { get; set; }
-        public string TeacherName { get; set; }
-    }
+
     public class Template
     {
         public List<int> needcredits = new List<int>();
