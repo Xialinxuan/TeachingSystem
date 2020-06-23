@@ -27,6 +27,7 @@ namespace TeachingSystem.Data
         public DbSet<TestResult> TestResults { get; set; }
         public DbSet<SpecialityCourse> SpecialityCourse { get; set; }
         public DbSet<Classroom> Classrooms { get; set; }
+        public DbSet<Apply> Applies { get; set; }
         public TSSDbContext(DbContextOptions<TSSDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -40,6 +41,8 @@ namespace TeachingSystem.Data
                 new IdentityRole { Name = "Teacher", NormalizedName = "TEACHER" },
                 new IdentityRole { Name = "Student", NormalizedName = "STUDENT" },
                 new IdentityRole { Name = "Manager", NormalizedName = "MANAGER" });
+                
+            builder.Entity<Apply>().Property(e =>e.ApplyId).ValueGeneratedOnAdd();
         }
     }
 }
