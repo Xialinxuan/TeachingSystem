@@ -273,7 +273,7 @@
 
     async Task UpdateList()
     {
-        courses.Clear();
+        
         userCourseIdlist.Clear();
         userClassesIdlist = myClasses.ClassesId;
         for( int i = 0;i<userClassesIdlist.Count;i++ ){
@@ -313,7 +313,7 @@
            
         }
         csTemplate.setCourse(BcoursesList,XcoursesList,GcoursesList,Bneedcredits,Bcurrentcredits,Xcurrentcredits,Gcurrentcredits);
-
+        courses.Clear();
         var selectclasses = from m in DbContext.Classes.Include("Classroom").Include("Course").Include("Teacher")
                 select m;
         if (!string.IsNullOrEmpty(myModel.CourseName))
@@ -343,6 +343,8 @@
             }
             courses.Add(showclasslist); 
         }
+        courses.OrderBy(i=>i[0].showclass.ClassId).ToList();
+        courses.Sort((x, y) => x[0].showclass.ClassId.CompareTo(y[0].showclass.ClassId));
     }
     
     async Task search()
