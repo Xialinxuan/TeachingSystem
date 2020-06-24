@@ -71,8 +71,10 @@
                                     <td>
                                         @if(@context.state == "选课"){
                                             <MatButton Raised="true" OnClick="@(e => OpenDialog(context))">补选</MatButton>
-                                        } else {
+                                        } else if(@context.state == "退课"){
                                             <MatButton Raised="true" OnClick="@(e => OpenDialogDecline(context))">撤销</MatButton>
+                                        }else{
+                                            <MatButton Raised="false" >已选课程</MatButton>
                                         }
                                     </td>
                                 </MatTableRow>
@@ -251,7 +253,9 @@
             List<shownclass> showclasslist = new List<shownclass>();
             foreach(Class c in details)
             {
-                if((c.Students!=null&&c.Students.Contains(user.Id))||(hasApply(c)))
+                if((c.Students!=null&&c.Students.Contains(user.Id)))
+                    showclasslist.Add(new shownclass(c,"禁用"));
+                else if(hasApply(c))
                     showclasslist.Add(new shownclass(c,"退课"));
                 else
                     showclasslist.Add(new shownclass(c,"选课"));
