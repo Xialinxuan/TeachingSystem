@@ -1,4 +1,4 @@
-@page "/CourseElective/Teachercopy"
+@page "/CourseElective/Teacher"
 @using Microsoft.AspNetCore.Mvc;
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<User> _userManager
@@ -36,31 +36,35 @@
                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-1"></div>
                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-10">
                     <MatAccordion Multi="true">
-                        @if(classes != null){
-                            foreach(var cla in classes){
+                        @if(cwu != null){
+                            foreach(var cla in cwu){
                                 <MatExpansionPanel style="margin-top: 1%;">
                                 <MatExpansionPanelSummary>
-                                <MatExpansionPanelHeader>@cla.ClassId @cla.Course.Name</MatExpansionPanelHeader>
+                                <MatExpansionPanelHeader>@cla.Class.ClassId @cla.Class.Course.Name</MatExpansionPanelHeader>
                                 </MatExpansionPanelSummary>
                                 <MatExpansionPanelDetails>
-                                    <MatTable Items="@cars" class="mat-elevation-z5" ShowPaging="false">
-                                        <MatTableHeader>
-                                            <th>教师</th>
-                                            <th>上课时间</th>
-                                            <th>上课地点</th>
-                                            <th>余量/容量</th>
-                                            <th>待定人数</th>
-                                            <th>操作</th>
-                                        </MatTableHeader>
-                                        <MatTableRow>
-                                            <td style="width: 20%;">@context.Name</td>
-                                            <td style="width: 25%;">@String.Format("${0:f2}", @context.Price)</td>
-                                            <td style="width: 25%;">@context.Horsepower</td>
-                                            <td style="width: 15%;">4/40</td>
-                                            <td style="width: 15%;">5</td>
-                                            <td><MatButton Raised="true">选课</MatButton></td>
-                                        </MatTableRow>
-                                    </MatTable>
+                                   <table class="table">
+                                        <thead>
+                                            <tr>
+                                            <th scope="col">学生名</th>
+                                            <th scope="col">性别</th>
+                                            <th scope="col">学生Id</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if(cla.Users != null){
+                                                    foreach(var user in cla.Users){
+                                                        <tr>
+                                                            <td>@user.UserName</td>
+                                                            <td>@user.Sex</td>
+                                                            <td>@user.Id</td>
+                                                        </tr>
+                                                    }
+                                                }else {
+                                                   <td>目前班级内暂无学生</td>
+                                                }
+                                            </tbody>
+                                        </table>
                                 </MatExpansionPanelDetails>
                             </MatExpansionPanel>
                             }
@@ -72,7 +76,6 @@
                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-1"></div>
             </div>
         </div>
-        
     </MatTab>
 
     <MatTab Label="补选审核">
@@ -157,35 +160,18 @@
 {
     [Inject] IJSRuntime JS { get; set; }
     IEnumerable<Class> classes;
+    List<classWithUser> cwu = new List<classWithUser>();
     DownloadModel myDownloadModel = new DownloadModel();
     User user;
-    public class Car
-    {
-        public string Name { get; set; }
-        public double Price { get; set; }
-        public int Horsepower { get; set; }
-
-        public Car(string name, double price, int horsepower)
-        {
-            Name = name;
-            Price = price;
-            Horsepower = horsepower;
-        }
-    }
-
-    Car[] cars = new[]
-    {
-        new Car("Volkswagen Golf", 10000, 220),
-        new Car("Volkswagen Passat", 11000, 240),
-        new Car("Volkswagen Polo", 12000, 110),
-        new Car("Ford Focus", 13000, 200),
-        new Car("Ford Fiesta", 14000, 160),
-        new Car("Ford Fusion", 15000, 260),
-        new Car("Ford Mondeo", 16000, 120),
-    };
 
     protected override async Task OnInitializedAsync()
     {
+        TSSDbContext.MyGlobals.PresentConnection++;
+        Console.WriteLine("OnInitialized " + TSSDbContext.MyGlobals.PresentConnection);
+        if(TSSDbContext.MyGlobals.PresentConnection > TSSDbContext.MyGlobals.MaxConnection){
+            await JS.InvokeAsync<object>("alert", "选课子系统连接人数已满！");
+            NavigationManager.NavigateTo("/");
+        }
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         user = await _userManager.GetUserAsync(authState.User);
         @*分页面1初始化*@
@@ -216,6 +202,24 @@
         @*selectcourses = selectcourses.Where(s => s.Teacher.name.Contains());*@ @*需要知道用户登录状态信息*@
         
         classes = await selectclasses.ToListAsync();
+        foreach(var cla in classes)
+        {
+            List<User> tmp = new List<User>();
+            foreach(var stuid in cla.Students)
+            {
+                User u =_userManager.Users.Where(s=>s.Id == stuid).FirstOrDefault();
+                tmp.Add(u);
+            }
+            classWithUser tmp1 = new classWithUser();
+            tmp1.Users = tmp;
+            tmp1.Class = cla;
+            cwu.Add(tmp1);
+        }
+    }
+    public class classWithUser
+    {
+        public Class Class {get; set;}
+        public List<User> Users {get;set;}
     }
 
     public class DownloadModel
