@@ -289,6 +289,7 @@
         }
         await UpdateList();
         await UpdateTemplate();
+<<<<<<< HEAD
         await UpdateTable();
     }
     async Task UpdateTable()
@@ -313,6 +314,9 @@
             }
         }
     }
+=======
+    }
+>>>>>>> 6aba816db184f4268f4a030dc77d761301d75637
     async Task UpdateTemplate()
     {
         userCourseIdlist.Clear();
@@ -466,9 +470,14 @@
             myClasses.ClassesId.Remove(c.ClassId);
             Toaster.Add("退课成功", MatToastType.Success);
             DbContext.SaveChanges();
+<<<<<<< HEAD
             await UpdateList(); 
             await UpdateTemplate();
             await UpdateTable();
+=======
+            UpdateList(); 
+            UpdateTemplate();
+>>>>>>> 6aba816db184f4268f4a030dc77d761301d75637
         }         
         else
         {   
@@ -513,9 +522,14 @@
                     myClasses.ClassesId.Add(c.ClassId);   
                     Toaster.Add("选课成功", MatToastType.Success);
                     DbContext.SaveChanges();
+<<<<<<< HEAD
                     await UpdateList(); 
                     await UpdateTemplate();
                     await UpdateTable();
+=======
+                    UpdateList(); 
+                    UpdateTemplate();
+>>>>>>> 6aba816db184f4268f4a030dc77d761301d75637
                 }      
             }
         }             
