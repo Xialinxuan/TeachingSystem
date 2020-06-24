@@ -115,7 +115,7 @@
                                     <td style="width: 10%;">@context.TheoryHours</td>
                                     <td style="width: 10%;">@context.PracticeHours</td>
                                     <td style="width: 10%;">@(context.TheoryHours + context.PracticeHours/2.0)</td>
-                                    <td><MatButton Raised="true">@if(userCourseIdlist.Contains(context.CourseId)){
+                                    <td><MatButton Raised="@userCourseIdlist.Contains(context.CourseId)">@if(userCourseIdlist.Contains(context.CourseId)){
                                         <div>已修</div>
                                         }else{
                                         <div>未修</div>
@@ -157,7 +157,7 @@
                                     <td style="width: 10%;">@context.TheoryHours</td>
                                     <td style="width: 10%;">@context.PracticeHours</td>
                                     <td style="width: 10%;">@(context.TheoryHours + context.PracticeHours/2.0)</td>
-                                    <td><MatButton Raised="true">@if(userCourseIdlist.Contains(context.CourseId)){
+                                    <td><MatButton Raised="@userCourseIdlist.Contains(context.CourseId)">@if(userCourseIdlist.Contains(context.CourseId)){
                                         <div>已修</div>
                                         }else{
                                         <div>未修</div>
@@ -199,7 +199,7 @@
                                     <td style="width: 10%;">@context.TheoryHours</td>
                                     <td style="width: 10%;">@context.PracticeHours</td>
                                     <td style="width: 10%;">@(context.TheoryHours + context.PracticeHours/2.0)</td>
-                                    <td><MatButton Raised="true">@if(userCourseIdlist.Contains(context.CourseId)){
+                                    <td><MatButton Raised="@userCourseIdlist.Contains(context.CourseId)">@if(userCourseIdlist.Contains(context.CourseId)){
                                         <div>已修</div>
                                         }else{
                                         <div>未修</div>
@@ -216,7 +216,28 @@
         </div>
     </MatTab>
     <MatTab Label="查看课表">
-        Second Content
+        <MatTable Items="@classtable" class="mat-elevation-z5" style="margin-top: 50px;">
+            <MatTableHeader>
+                <th >时间</th>
+                <th style="width: 14.3%;">星期一</th>
+                <th style="width: 14.3%;">星期二</th>
+                <th style="width: 14.3%;">星期三</th>
+                <th style="width: 14.3%;">星期四</th>
+                <th style="width: 14.3%;">星期五</th>
+                <th style="width: 14.3%;">星期六</th>
+                <th style="width: 14.3%;">星期日</th>
+            </MatTableHeader>
+            <MatTableRow>
+                <td>@context.Time</td>
+                <td>@context.Class[0]</td>
+                <td>@context.Class[1]</td>
+                <td>@context.Class[2]</td>
+                <td>@context.Class[3]</td>
+                <td>@context.Class[4]</td>
+                <td>@context.Class[5]</td>
+                <td>@context.Class[6]</td>
+            </MatTableRow>
+        </MatTable>
     </MatTab>
     <MatTab Label="补选课程">
         <ClassApply/>
@@ -234,6 +255,7 @@
 
     List<List<shownclass>> courses = new List<List<shownclass>>();
     List<Class> details;
+    table[] classtable = new table[13];
     SearchModel myModel = new SearchModel();
     Template csTemplate = new Template();
     UserClasses myClasses = new UserClasses();
@@ -265,12 +287,74 @@
         else{
             myClasses = mc[0];
         }
-        
-
-
         await UpdateList();
+        await UpdateTemplate();
+        await UpdateTable();
+    }
+     async Task UpdateTable()
+    {
+        for(int i = 0;i<13;i++){
+            classtable[i] = new table(i);
+        }
+        var mc = DbContext.UserClasses.Include("User").Where(i => i.User.Id == user.Id);
+        List<string> myClasses = mc.ToList()[0].ClassesId;
+        foreach(string id in myClasses)
+        {
+            Class c = DbContext.Classes.Include("Teacher").Include("Course").Include("Classroom").Where(i => i.ClassId == id).ToList()[0];
+            for(int i = 0; i < 7; i++)
+            {
+                int time = c.TeachTime[i];
+                for(int j = 12; j >= 0; j--) {
+                    if ((time & 1) == 1) {
+                        classtable[j].Class[i] = c.Course.Name + "\n" + c.Teacher.Name + "\n" + c.Classroom.ClassroomName;
+                    } 
+                    time = time >> 1;
+                }
+            }
+        }
     }
 
+    async Task UpdateTemplate()
+    {
+        userCourseIdlist.Clear();
+        userClassesIdlist = myClasses.ClassesId;
+        for( int i = 0;i<userClassesIdlist.Count;i++ ){
+            var p = userClassesIdlist[i];
+            var userCourse = await DbContext.Classes.Include("Course").Where(i => i.ClassId == p ).ToListAsync();
+            userCourseIdlist.Add(userCourse[0].Course.CourseId);
+        }
+        BcoursesList.Clear();
+        XcoursesList.Clear();
+        GcoursesList.Clear();
+        double Bneedcredits = 0;
+        double Bcurrentcredits = 0;
+        double Xcurrentcredits = 0;
+        double Gcurrentcredits = 0;
+        
+        var sc = await DbContext.SpecialityCourse.Include(i => i.Course).ToListAsync();
+        foreach(SpecialityCourse c in sc)
+        {
+            Course s = c.Course;
+            if(s.CourseId.Contains("B")){
+                BcoursesList.Add(s);
+                Bneedcredits += s.TheoryHours + s.PracticeHours/2.0;
+                if( userCourseIdlist.Contains(s.CourseId) ){
+                    Bcurrentcredits +=  s.TheoryHours + s.PracticeHours/2.0;;
+                }
+            }else if(s.CourseId.Contains("X")){
+                XcoursesList.Add(s);
+                 if( userCourseIdlist.Contains(s.CourseId) ){
+                    Xcurrentcredits +=  s.TheoryHours + s.PracticeHours/2.0;;
+                }
+            }else if(s.CourseId.Contains("G")){
+                GcoursesList.Add(s);
+                 if( userCourseIdlist.Contains(s.CourseId) ){
+                    Gcurrentcredits +=  s.TheoryHours + s.PracticeHours/2.0;;
+                }
+            }         
+        }
+        csTemplate.setCourse(BcoursesList,XcoursesList,GcoursesList,Bneedcredits,Bcurrentcredits,Xcurrentcredits,Gcurrentcredits);
+    }
     async Task UpdateList()
     {
         
@@ -417,13 +501,18 @@
 
     void select(Class c)
     {   
-        if(c.Students.Contains(user.Id))
+        if(TSSDbContext.MyGlobals.Systemstate != 1){
+            Toaster.Add("现在不是选课时间！",  MatToastType.Danger);
+        }
+        else if(c.Students.Contains(user.Id))
         {             
             c.Students.Remove(user.Id);
             myClasses.ClassesId.Remove(c.ClassId);
             Toaster.Add("退课成功", MatToastType.Success);
             DbContext.SaveChanges();
-            UpdateList(); 
+            UpdateList();
+            UpdateTemplate();
+            UpdateTable();
         }         
         else
         {   
@@ -468,12 +557,37 @@
                     myClasses.ClassesId.Add(c.ClassId);   
                     Toaster.Add("选课成功", MatToastType.Success);
                     DbContext.SaveChanges();
-                    UpdateList(); 
+                    UpdateList();
+                    UpdateTemplate();
+                    UpdateTable();
                 }      
             }
         }             
     }
-
+    public class table
+    {
+        public string Time = "";
+        public string[] Class = new string[7];        
+        public table(int i)
+        {
+            switch(i) {
+                case 0: Time = "08:00-08:45"; break;
+                case 1: Time = "08:50-09:35"; break;
+                case 2: Time = "09:50-10:35"; break;
+                case 3: Time = "10:40-11:25"; break;
+                case 4: Time = "11:30-12:15"; break;
+                case 5: Time = "13:15-14:00"; break;
+                case 6: Time = "14:05-14:50"; break;
+                case 7: Time = "14:55-15:40"; break;
+                case 8: Time = "15:55-16:40"; break;
+                case 9: Time = "16:45-17:30"; break;
+                case 10: Time = "18:30-19:15"; break;
+                case 11: Time = "19:20-20:05"; break;
+                case 12: Time = "20:10-20:55"; break;
+            }
+            Class[0] = "";Class[1] = "";Class[2] = "";Class[3] = "";Class[4] = "";Class[5] = "";Class[6] = "";
+        }
+    }
     public class shownclass
     {
         public Class showclass { get; set; }
