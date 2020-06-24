@@ -17,6 +17,7 @@ namespace TeachingSystem.Data
         public string CourseId { get; set; }
         //用户ID 代替学生ID
 
+        public string Belong { get; set; }
         //导航属性 到Course
         public Course Course { get; set; }
     }

@@ -331,7 +331,7 @@
         double Xcurrentcredits = 0;
         double Gcurrentcredits = 0;
         
-        var sc = await DbContext.SpecialityCourse.Include(i => i.Course).ToListAsync();
+        var sc = await DbContext.SpecialityCourse.Include(i => i.Course).Where(i => i.Belong == user.Belong ).ToListAsync();
         foreach(SpecialityCourse c in sc)
         {
             Course s = c.Course;

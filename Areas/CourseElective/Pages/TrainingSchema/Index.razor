@@ -24,6 +24,7 @@
         <thead>
             <tr>
                 <th scope="col">培养方案课程号</th>
+                <th scope="col">培养方案归属专业</th>
                 <th scope="col">课程号</th>
                 <th scope="col">课程名称</th>
                 <th scope="col">开课院系</th>
@@ -37,6 +38,7 @@
                   foreach(var SC in specialityCourse){
                     <tr>
                         <td>@SC.SpecialityCourseID</td>
+                        <td>@SC.Belong</td>
                         <td>@SC.CourseId</td>
                         <td>@SC.Course.Name</td>
                         <td>@SC.Course.Department</td>
@@ -77,7 +79,7 @@
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         user = await _userManager.GetUserAsync(authState.User);
-        Console.WriteLine("Get User id:" + user.Id + " user name:" + user.UserName);
+       
  
         await UpdateList();
         await UpdateList();
