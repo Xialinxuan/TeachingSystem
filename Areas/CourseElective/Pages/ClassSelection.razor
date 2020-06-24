@@ -499,7 +499,7 @@
         return timeStr;
     }
 
-    void select(Class c)
+    async Task  select(Class c)
     {   
         if(TSSDbContext.MyGlobals.Systemstate != 1){
             Toaster.Add("现在不是选课时间！",  MatToastType.Danger);
@@ -510,9 +510,9 @@
             myClasses.ClassesId.Remove(c.ClassId);
             Toaster.Add("退课成功", MatToastType.Success);
             DbContext.SaveChanges();
-            UpdateList();
-            UpdateTemplate();
-            UpdateTable();
+            await UpdateList();
+            await UpdateTemplate();
+            await UpdateTable();
         }         
         else
         {   
@@ -557,9 +557,9 @@
                     myClasses.ClassesId.Add(c.ClassId);   
                     Toaster.Add("选课成功", MatToastType.Success);
                     DbContext.SaveChanges();
-                    UpdateList();
-                    UpdateTemplate();
-                    UpdateTable();
+                    await UpdateList();
+                    await UpdateTemplate();
+                    await UpdateTable();
                 }      
             }
         }             
