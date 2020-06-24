@@ -115,7 +115,7 @@
                                     <td style="width: 10%;">@context.TheoryHours</td>
                                     <td style="width: 10%;">@context.PracticeHours</td>
                                     <td style="width: 10%;">@(context.TheoryHours + context.PracticeHours/2.0)</td>
-                                    <td><MatButton Raised="true">@if(userCourseIdlist.Contains(context.CourseId)){
+                                    <td><MatButton Raised="@userCourseIdlist.Contains(context.CourseId)">@if(userCourseIdlist.Contains(context.CourseId)){
                                         <div>已修</div>
                                         }else{
                                         <div>未修</div>
@@ -157,7 +157,7 @@
                                     <td style="width: 10%;">@context.TheoryHours</td>
                                     <td style="width: 10%;">@context.PracticeHours</td>
                                     <td style="width: 10%;">@(context.TheoryHours + context.PracticeHours/2.0)</td>
-                                    <td><MatButton Raised="true">@if(userCourseIdlist.Contains(context.CourseId)){
+                                    <td><MatButton Raised="@userCourseIdlist.Contains(context.CourseId)">@if(userCourseIdlist.Contains(context.CourseId)){
                                         <div>已修</div>
                                         }else{
                                         <div>未修</div>
@@ -199,7 +199,7 @@
                                     <td style="width: 10%;">@context.TheoryHours</td>
                                     <td style="width: 10%;">@context.PracticeHours</td>
                                     <td style="width: 10%;">@(context.TheoryHours + context.PracticeHours/2.0)</td>
-                                    <td><MatButton Raised="true">@if(userCourseIdlist.Contains(context.CourseId)){
+                                    <td><MatButton Raised="@userCourseIdlist.Contains(context.CourseId)">@if(userCourseIdlist.Contains(context.CourseId)){
                                         <div>已修</div>
                                         }else{
                                         <div>未修</div>
@@ -265,12 +265,51 @@
         else{
             myClasses = mc[0];
         }
-        
-
-
         await UpdateList();
+        await UpdateTemplate();
     }
 
+    async Task UpdateTemplate()
+    {
+        userCourseIdlist.Clear();
+        userClassesIdlist = myClasses.ClassesId;
+        for( int i = 0;i<userClassesIdlist.Count;i++ ){
+            var p = userClassesIdlist[i];
+            var userCourse = await DbContext.Classes.Include("Course").Where(i => i.ClassId == p ).ToListAsync();
+            userCourseIdlist.Add(userCourse[0].Course.CourseId);
+        }
+        BcoursesList.Clear();
+        XcoursesList.Clear();
+        GcoursesList.Clear();
+        double Bneedcredits = 0;
+        double Bcurrentcredits = 0;
+        double Xcurrentcredits = 0;
+        double Gcurrentcredits = 0;
+        
+        var sc = await DbContext.SpecialityCourse.Include(i => i.Course).ToListAsync();
+        foreach(SpecialityCourse c in sc)
+        {
+            Course s = c.Course;
+            if(s.CourseId.Contains("B")){
+                BcoursesList.Add(s);
+                Bneedcredits += s.TheoryHours + s.PracticeHours/2.0;
+                if( userCourseIdlist.Contains(s.CourseId) ){
+                    Bcurrentcredits +=  s.TheoryHours + s.PracticeHours/2.0;;
+                }
+            }else if(s.CourseId.Contains("X")){
+                XcoursesList.Add(s);
+                 if( userCourseIdlist.Contains(s.CourseId) ){
+                    Xcurrentcredits +=  s.TheoryHours + s.PracticeHours/2.0;;
+                }
+            }else if(s.CourseId.Contains("G")){
+                GcoursesList.Add(s);
+                 if( userCourseIdlist.Contains(s.CourseId) ){
+                    Gcurrentcredits +=  s.TheoryHours + s.PracticeHours/2.0;;
+                }
+            }         
+        }
+        csTemplate.setCourse(BcoursesList,XcoursesList,GcoursesList,Bneedcredits,Bcurrentcredits,Xcurrentcredits,Gcurrentcredits);
+    }
     async Task UpdateList()
     {
         
@@ -417,13 +456,17 @@
 
     void select(Class c)
     {   
-        if(c.Students.Contains(user.Id))
+        if(TSSDbContext.MyGlobals.Systemstate != 1){
+            Toaster.Add("现在不是选课时间！",  MatToastType.Danger);
+        }
+        else if(c.Students.Contains(user.Id))
         {             
             c.Students.Remove(user.Id);
             myClasses.ClassesId.Remove(c.ClassId);
             Toaster.Add("退课成功", MatToastType.Success);
             DbContext.SaveChanges();
             UpdateList(); 
+            UpdateTemplate();
         }         
         else
         {   
@@ -469,6 +512,7 @@
                     Toaster.Add("选课成功", MatToastType.Success);
                     DbContext.SaveChanges();
                     UpdateList(); 
+                    UpdateTemplate();
                 }      
             }
         }             
