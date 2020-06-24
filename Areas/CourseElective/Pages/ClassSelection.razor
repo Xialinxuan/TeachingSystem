@@ -265,15 +265,11 @@
         else{
             myClasses = mc[0];
         }
-        
-
-
         await UpdateList();
+        await UpdateTemplate();
     }
-
-    async Task UpdateList()
+    async Task UpdateTemplate()
     {
-        
         userCourseIdlist.Clear();
         userClassesIdlist = myClasses.ClassesId;
         for( int i = 0;i<userClassesIdlist.Count;i++ ){
@@ -309,10 +305,12 @@
                  if( userCourseIdlist.Contains(s.CourseId) ){
                     Gcurrentcredits +=  s.TheoryHours + s.PracticeHours/2.0;;
                 }
-            }
-           
+            }         
         }
         csTemplate.setCourse(BcoursesList,XcoursesList,GcoursesList,Bneedcredits,Bcurrentcredits,Xcurrentcredits,Gcurrentcredits);
+    }
+    async Task UpdateList()
+    {
         courses.Clear();
         var selectclasses = from m in DbContext.Classes.Include("Classroom").Include("Course").Include("Teacher")
                 select m;
@@ -424,6 +422,7 @@
             Toaster.Add("退课成功", MatToastType.Success);
             DbContext.SaveChanges();
             UpdateList(); 
+            UpdateTemplate();
         }         
         else
         {   
@@ -469,6 +468,7 @@
                     Toaster.Add("选课成功", MatToastType.Success);
                     DbContext.SaveChanges();
                     UpdateList(); 
+                    UpdateTemplate();
                 }      
             }
         }             
