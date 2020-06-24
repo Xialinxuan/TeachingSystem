@@ -48,6 +48,7 @@
                                             <tr>
                                             <th scope="col">学生名</th>
                                             <th scope="col">性别</th>
+                                            <th scope="col">专业</th>
                                             <th scope="col">学生Id</th>
                                                 </tr>
                                             </thead>
@@ -55,8 +56,9 @@
                                                 @if(cla.Users != null){
                                                     foreach(var user in cla.Users){
                                                         <tr>
-                                                            <td>@user.UserName</td>
+                                                            <td>@user.Name</td>
                                                             <td>@user.Sex</td>
+                                                            <td>@user.Belong</td>
                                                             <td>@user.Id</td>
                                                         </tr>
                                                     }
