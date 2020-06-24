@@ -165,20 +165,28 @@
     }
     async Task postApply()
     {
-        Apply apply = new Apply();
-        apply.Reason = applyModel.reason;
-        apply.Student = user;
-        apply.Class = applyModel.ApplyClass;
-        await DbContext.Applies.AddAsync(apply);
-        await DbContext.SaveChangesAsync();
+        if(TSSDbContext.MyGlobals.Systemstate != 2){
+            Toaster.Add("现在不是补选时间！",  MatToastType.Danger);
+        }else{
+            Apply apply = new Apply();
+            apply.Reason = applyModel.reason;
+            apply.Student = user;
+            apply.Class = applyModel.ApplyClass;
+            await DbContext.Applies.AddAsync(apply);
+            await DbContext.SaveChangesAsync();
 
-        applyObj.state="退课";
-        dialogIsOpen = false;
-        Toaster.Add("补选申请提交成功！", MatToastType.Success);
+            applyObj.state="退课";
+            dialogIsOpen = false;
+            Toaster.Add("补选申请提交成功！", MatToastType.Success);
+        }
+        
     }
 
     async Task declineApply()
     {
+        if(TSSDbContext.MyGlobals.Systemstate != 2){
+            Toaster.Add("现在不是补选时间！",  MatToastType.Danger);
+        }else{
         List<Apply> apply = new List<Apply>();
         var all = from m in DbContext.Applies.Include("Class").Include("Student")
             select m;
@@ -192,6 +200,7 @@
         applyObj.state="选课";
         declineIsOpen = false;
         Toaster.Add("撤销补选申请成功！", MatToastType.Success);
+        }
     }
 
     Boolean hasApply(Class c)
